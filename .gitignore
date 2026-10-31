@@ -1,0 +1,51 @@
+# Dipendenze e build
+node_modules/
+.pnpm-store/
+dist/
+build/
+.next/
+out/
+.turbo/
+coverage/
+*.tsbuildinfo
+
+# Expo / mobile
+.expo/
+apps/mobile/ios/
+apps/mobile/android/
+*.jks
+*.keystore
+*.p8
+*.p12
+*.mobileprovision
+
+# Ambiente e segreti (mai in repo)
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+secrets/
+infra/**/secrets*.yml
+!infra/**/secrets*.sops.yml
+
+# Log e temporanei
+*.log
+logs/
+tmp/
+.DS_Store
+Thumbs.db
+
+# Test
+playwright-report/
+test-results/
+reports/
+stryker-tmp/
+
+# Editor
+.vscode/*
+!.vscode/extensions.json
+.idea/
+
+# Claude Code (impostazioni locali personali)
+.claude/settings.local.json
