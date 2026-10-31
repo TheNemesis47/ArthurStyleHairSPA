@@ -6,9 +6,9 @@ Stato: `bozza` · Codice: `infra/` · Decisione: [ADR-0007](adr/0007-vps-docker-
 
 | Voce | Scelta proposta | Note |
 |------|-----------------|------|
-| Provider | **Hetzner Cloud** (Germania/Finlandia) oppure **Aruba Cloud** (Italia) | Data center **in UE** (GDPR). ❓ DOMANDA: hai già un provider? |
-| Produzione | 4 vCPU · 8 GB RAM · 80+ GB SSD (x86) | Ampio margine: Postgres + Next.js + osservabilità |
-| Staging | 2 vCPU · 4 GB RAM, **VPS separata** | Isola le scansioni di sicurezza e i test di restore dalla produzione |
+| Provider | **La tua VPS esistente** (Q36) ❓ Q45: provider, paese del data center (deve essere **UE**), risorse, altri progetti | Se ospita altri progetti: reti Docker, utenti e DB **separati**, limiti di CPU/RAM per container |
+| Produzione | Consigliati ≥ 4 vCPU · 8 GB RAM · 80 GB SSD **liberi** per questo progetto | Postgres + Next.js + API + osservabilità leggera |
+| Staging | **Stessa VPS**, progetto Compose separato (rete, DB e segreti propri), acceso solo quando serve | Scelta di budget (40 €/mese). Le scansioni attive (ZAP/sqlmap) si lanciano con limiti di risorse e fuori orario; il restore test usa un cluster Postgres separato |
 | Sistema operativo | **Ubuntu Server 24.04 LTS** | Supporto fino al 2029 (+ ESM) |
 | Architettura | x86_64 | ARM costa meno, ma servono immagini multi-arch: si valuta dopo |
 | Firewall del provider | Sì (Hetzner Cloud Firewall) | Prima linea, prima di nftables |
@@ -82,7 +82,7 @@ flowchart LR
 | Media (foto galleria, cache Instagram) | `restic` | giornaliero | 30 giorni |
 | Configurazione e segreti | Repo `infra/` + copia sops/age | a ogni modifica | storico git |
 
-- Destinazione: **object storage S3-compatibile in UE**, presso un **provider diverso** dalla VPS (se Hetzner salta, i backup sopravvivono). Cifratura lato client (repo cifrato pgBackRest/restic) con chiave custodita **fuori** dal server.
+- Destinazione: **object storage S3-compatibile in UE**, presso un **provider diverso** da quello della VPS (se il provider ha un problema, i backup sopravvivono). Cifratura lato client (repo cifrato pgBackRest/restic) con chiave custodita **fuori** dal server.
 - Bucket con *object lock* / versioning: un attaccante con accesso al server non può cancellare i backup.
 - **Restore test automatico mensile** su staging: ripristino in un punto nel tempo → controlli di integrità (conteggi, vincoli) → report e alert se fallisce. Tempo cronometrato e confrontato con l'RTO.
 

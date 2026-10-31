@@ -25,7 +25,7 @@ Stato: `bozza` · Implementazione: `apps/api` · Contratto: OpenAPI 3.1 generata
 | Client | Meccanismo |
 |--------|------------|
 | Sito pubblico | Anonimo + Turnstile sugli endpoint sensibili. Sessione hold legata a un cookie `__Host-hold` firmato |
-| Cliente (web) | Better Auth: OTP o magic link via email/SMS → cookie `__Host-` `HttpOnly` `Secure` `SameSite=Lax` |
+| Cliente (web) | Better Auth: OTP via **email** (Q17) → cookie `__Host-` `HttpOnly` `Secure` `SameSite=Lax` |
 | Cliente (app) | Better Auth Expo: token di sessione in `expo-secure-store`, header `Authorization: Bearer` |
 | Pannello | Better Auth: email + password (Argon2id) + **MFA obbligatoria** (passkey o TOTP), cookie di sessione + token CSRF |
 | Agenti MCP | OAuth 2.1 (vedi [11](11-mcp-agenti.md)). I token MCP **non** sono accettati da `/v1` e viceversa (audience diversa) |
@@ -38,12 +38,11 @@ Stato: `bozza` · Implementazione: `apps/api` · Contratto: OpenAPI 3.1 generata
 | GET | `/v1/locations` | Sedi attive | Cache CDN 5' |
 | GET | `/v1/locations/{slug}` | Dettaglio: indirizzo, orari, contatti | |
 | GET | `/v1/locations/{slug}/services` | Catalogo prenotabile (categorie, prezzi, durata **totale percepita**) | Le fasi interne non si espongono |
-| GET | `/v1/locations/{slug}/staff` | Operatori prenotabili (nome, foto, servizi) | Niente dati personali oltre al nome d'arte |
-| GET | `/v1/availability` | `?location=&services=a,b&staff=any\|id&from=2026-11-03&to=2026-11-16` | Max 31 giorni. Rate limit |
-| POST | `/v1/booking-holds` | Crea un hold `{location, services[], staffId, start}` | Turnstile, idempotente, max 1 attivo per sessione |
+| GET | `/v1/availability` | `?location=&services=a,b&from=2026-11-03&to=2026-11-16` | Max 31 giorni. Rate limit. **Nessun parametro operatore** (Q21): l'assegnazione è interna |
+| POST | `/v1/booking-holds` | Crea un hold `{location, services[], start}` | Turnstile, idempotente, max 1 attivo per sessione. L'operatore lo sceglie il server |
 | DELETE | `/v1/booking-holds/{id}` | Rilascia l'hold (l'utente torna indietro) | Solo il proprietario della sessione |
 | POST | `/v1/booking-holds/{id}/confirm` | Conferma con dati cliente, consensi, OTP | `201` + riepilogo |
-| POST | `/v1/otp` | Richiede un OTP per email/telefono | Risposta **sempre** generica (anti-enumerazione), limiti per destinatario e IP |
+| POST | `/v1/otp` | Richiede un OTP via email | Risposta **sempre** generica (anti-enumerazione), limiti per destinatario e IP |
 | POST | `/v1/otp/verify` | Verifica l'OTP | Max 5 tentativi, poi blocco |
 | GET | `/v1/manage/{token}` | Prenotazione dal link di gestione | Token a 256 bit, hash in DB, `Referrer-Policy: no-referrer` |
 | POST | `/v1/manage/{token}/cancel` | Disdetta self-service | Entro la finestra |
@@ -71,7 +70,8 @@ Stato: `bozza` · Implementazione: `apps/api` · Contratto: OpenAPI 3.1 generata
 
 | Area | Endpoint principali | Ruolo minimo |
 |------|---------------------|--------------|
-| Calendario | `GET /calendar?from&to&resources` (allocazioni + prenotazioni), `GET /events` (SSE) | staff |
+| Sedi | `GET /locations` (sedi dell'organizzazione visibili all'utente), CRUD `/locations` (max 10) | owner |
+| Calendario | `GET /calendar?location&from&to&resources` (allocazioni + prenotazioni), `GET /events` (SSE) | staff |
 | Prenotazioni | `POST /bookings` · `PATCH /bookings/{id}` (sposta/modifica) · `POST /bookings/{id}/status` (completed/no_show/cancelled) · `POST /bookings/{id}/force` | staff · force: **owner** |
 | Blocchi | `POST /blocks` · `DELETE /blocks/{id}` · `POST /blocks/preview` (mostra i conflitti prima di salvare) | staff |
 | Catalogo | CRUD `/services`, `/services/{id}/steps`, `/categories`, `/pools`, `/resources` | owner |
@@ -110,7 +110,7 @@ Content-Type: application/json
 Idempotency-Key: 0192f5a4-7b1c-7cde-9a10-3f2b8c1d4e55
 CF-Turnstile-Response: <token>
 
-{"location":"firenze","services":["colore-piega"],"staffId":"any","start":"2026-11-03T10:30:00+01:00"}
+{"location":"firenze","services":["colore-piega"],"start":"2026-11-03T10:30:00+01:00"}
 ```
 
 ```http
@@ -122,9 +122,9 @@ Content-Type: application/problem+json
   "title": "Questo orario è appena stato prenotato",
   "status": 409,
   "alternatives": [
-    {"start":"2026-11-03T10:45:00+01:00","staffId":"…"},
-    {"start":"2026-11-03T11:15:00+01:00","staffId":"…"},
-    {"start":"2026-11-03T14:00:00+01:00","staffId":"…"}
+    {"start":"2026-11-03T10:45:00+01:00"},
+    {"start":"2026-11-03T11:15:00+01:00"},
+    {"start":"2026-11-03T14:00:00+01:00"}
   ]
 }
 ```

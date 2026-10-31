@@ -7,7 +7,9 @@ Stato: `bozza` · App: `apps/mobile` (Expo, React Native) · Skill: `expo-*`, `e
 Un'app che è solo "il sito in una scatola" viene **rifiutata** da Apple (App Review Guideline **4.2 — Minimum
 Functionality**). La nostra deve offrire un valore nativo concreto:
 
-- notifiche **push** (conferma, promemoria, variazioni, "si è liberato un posto");
+- notifiche **push** (conferma, promemoria, variazioni, "si è liberato un posto"). Sono il **canale principale dei promemoria**
+  scelto dal cliente (Q19): chi ha l'app riceve push, chi non ce l'ha riceve email. Per questo l'app va promossa
+  (QR in salone, link nelle email di conferma, banner sul sito);
 - **"riprenota il solito"** in un tap, con storico e preferiti;
 - integrazione con il **calendario** del telefono (`expo-calendar`) e, in futuro, Wallet;
 - login persistente sicuro, deep link dalle email (Universal/App Links);

@@ -1,10 +1,14 @@
 # Arthur Style — Piattaforma digitale
 
 > Sito vetrina, sistema di prenotazione, pannello di gestione, app iOS/Android e server MCP per gli agenti AI
-> di **Arthur Style Hair S.P.A.**, Via Sant'Egidio 19R, 50122 Firenze. In programma il trasferimento a Malta.
+> di **Arthur Style · Hair Spa** (Firenze, Via Sant'Egidio). Trasferimento a Malta previsto fra circa 2 mesi.
+> Tel. +39 353 491 8255 · WhatsApp +39 331 754 5064 · Instagram [@arthurstylehairspa](https://www.instagram.com/arthurstylehairspa/)
 
-**Stato attuale:** 🟡 **progettazione**. Nella repo c'è solo documentazione: il codice non è ancora stato scritto.
-Prima di cominciare a scrivere codice bisogna chiudere le [domande aperte](docs/17-domande-aperte.md) con priorità P0.
+**Stato attuale:** 🟡 **progettazione**, prima tornata di risposte del cliente ricevuta (31/10/2026). Pronti: documentazione,
+**brand** ([logo vettoriale, palette, token](brand/README.md)), skill installate, dati mock. Il codice non è ancora scritto.
+Restano P0: indirizzo (Q44), Treatwell (Q43), numero di operatori (Q07): vedi [domande aperte](docs/17-domande-aperte.md).
+
+<p align="center"><img src="brand/logo/arthur-style-logo.svg" alt="Arthur Style — Hair Spa" width="420"></p>
 
 ---
 
@@ -46,7 +50,9 @@ Si legge in ordine. Ogni documento è autonomo, ma rimanda agli altri dove serve
 | [17 — Domande aperte](docs/17-domande-aperte.md) | Domande da fare ad Arturo, con priorità |
 | [18 — Rischi](docs/18-rischi.md) | Registro dei rischi e mitigazioni |
 | [19 — Riferimenti open source](docs/19-riferimenti-open-source.md) | Progetti e librerie da cui prendere idee o da riusare |
-| [20 — Costi](docs/20-costi.md) | Costi ricorrenti e una tantum (stime) |
+| [20 — Costi](docs/20-costi.md) | Costi, chi paga cosa, sostenibilità di 1.500 € + 40 €/mese |
+| [21 — Dati mock](docs/21-dati-mock.md) | Listino, orari, policy e risorse di prova (seed) |
+| [brand/](brand/README.md) | Logo vettoriale, palette, token di design, font, foto |
 | [Glossario](docs/glossario.md) | Linguaggio di dominio condiviso (IT ↔ codice EN) |
 | [ADR](docs/adr/README.md) | Registro delle decisioni architetturali |
 | [Ricerche](docs/research/) | Verifiche e ricerche con data (es. test dei vincoli PostgreSQL sotto concorrenza) |
@@ -60,12 +66,13 @@ Si legge in ordine. Ogni documento è autonomo, ma rimanda agli altri dove serve
 3. **Tempi di posa modellati**: durante la posa del colore l'operatore è libero e può servire un altro cliente; la postazione resta occupata. Gestionali generici come Calendly o Cal.com non lo fanno. → [06](docs/06-motore-prenotazioni.md)
 4. **Un'unica API** (Fastify) che servono web, pannello, app e MCP. → [ADR-0003](docs/adr/0003-api-unica-fastify.md)
 5. **App con Expo (React Native)**: un solo codice per iOS e Android. → [ADR-0004](docs/adr/0004-app-mobile-expo.md)
-6. **Multi-sede fin dal primo giorno** (Firenze → Malta): fuso orario, IVA, lingua e valuta stanno sulla sede. → [ADR-0008](docs/adr/0008-multi-sede-malta.md)
+6. **Multi-sede e multi-tenant** (Firenze → Malta, fino a 10 negozi): fuso, IVA, lingua e valuta stanno sulla sede; isolamento tra organizzazioni anche nel DB (RLS, verificato). → [ADR-0008](docs/adr/0008-multi-sede-malta.md), [ADR-0009](docs/adr/0009-multi-tenancy.md)
 7. **MCP come processo separato**, OAuth 2.1, solo tool in allowlist, audit di ogni chiamata. Mai un tool "esegui SQL". → [ADR-0006](docs/adr/0006-mcp-processo-separato.md)
 8. **VPS europea con Docker Compose + Caddy + Cloudflare**, backup cifrati fuori sede con ripristino testato ogni mese. → [ADR-0007](docs/adr/0007-vps-docker-caddy-cloudflare.md)
 
 ## Prossimo passo
 
-1. Rispondere alle domande **P0** in [docs/17-domande-aperte.md](docs/17-domande-aperte.md) (servono Arturo e i materiali del brand).
-2. Installare le skill indicate in [docs/03](docs/03-skill-e-workflow-agenti.md) e lanciare `/grill-with-docs` sul brief per far emergere ciò che manca.
-3. Avviare la **Fase 0** della [roadmap](docs/16-roadmap.md). Gli account developer Apple e Google aziendali richiedono il **D-U-N-S**, che può richiedere settimane: va avviato **subito**.
+1. Chiudere le **P0** rimaste in [docs/17](docs/17-domande-aperte.md): indirizzo corretto (Q44), Treatwell (Q43), numero di operatori (Q07).
+2. Nella prossima sessione: `/setup-matt-pocock-skills`, poi `/grill-with-docs` sul brief aggiornato.
+3. Decidere l'opzione commerciale (A o B) in [docs/20](docs/20-costi.md) e scrivere il contratto (Q35).
+4. Avviare **F0** e **F3a (vetrina)** della [roadmap](docs/16-roadmap.md). Il **D-U-N-S** per gli account store va avviato subito: può richiedere settimane.

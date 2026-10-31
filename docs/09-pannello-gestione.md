@@ -27,7 +27,6 @@ Tutto il resto (prezzi, orari, statistiche) è secondario e può stare un livell
 | **Trattamenti** | Lista per categoria, drag per l'ordine. Editor: nomi IT/EN, descrizione, prezzo, "a partire da", **editor delle fasi** (durata, operatore occupato/libero, risorse richieste), buffer, operatori abilitati, prenotabile online | ADMIN-06 |
 | Orari | Griglia settimanale per operatore (più fasce), orari del salone, ferie e chiusure, "applica festività" | ADMIN-07 |
 | Clienti | Ricerca, scheda (storico, spesa, no-show, consensi), note interne, unisci duplicati, export, anonimizza, blocca prenotazioni online | ADMIN-09, 16 |
-| **Galleria** | Upload foto lavori (ridimensionamento, AVIF/WebP, **rimozione EXIF/GPS**), prima/dopo, categoria, collegamento obbligatorio a cliente + liberatoria (o "nessuna persona riconoscibile"), pubblica/nascondi | ADMIN-21 |
 | Giornata straordinaria | Seleziona giorno/operatore → elenco appuntamenti → proponi nuovi orari / annulla in blocco → messaggio unico personalizzabile → report invii | ADMIN-22 |
 | Statistiche | Occupazione per giorno/operatore, incasso **stimato**, no-show %, nuovi vs abituali, canale (web/app/Instagram/telefono), trattamenti più richiesti | ADMIN-13 |
 | Impostazioni | Regole di prenotazione, notifiche e template, sede (indirizzo, P.IVA, fuso), utenti e ruoli, feature flag | ADMIN-08, 14 |
@@ -57,8 +56,9 @@ la complessità non deve spaventare.
 
 - **Tempo reale:** stream SSE. Una nuova prenotazione online compare con un'animazione discreta e una notifica (suono opzionale).
 - **Notifiche ad Arturo fuori dal pannello:** Web Push della PWA (ADMIN-23) + email, configurabili per tipo (nuova, disdetta, spostamento).
-- **Contenuti del sito:** listino e galleria si gestiscono dal pannello. I testi "editoriali" (storia di Arturo, manifesto)
-  stanno nel repo (MDX IT/EN) e li modifichi tu: cambiano raramente e così restano revisionati. Un CMS headless si valuta solo se Arturo vorrà scriverli da solo ❓.
+- **Contenuti del sito** (Q40): Arturo gestisce solo agenda, clienti, trattamenti e prezzi. Testi e galleria li gestiamo
+  **noi** nel repo (`apps/web/content/`, MDX IT/EN + immagini), con rimozione EXIF/GPS automatica in build e liberatoria registrata.
+- **Multi-sede** (ADMIN-20): selettore di sede in alto; un utente vede solo le sedi su cui ha un ruolo. Su telefono la sede si ricorda per dispositivo.
 - **Drag & drop:** aggiornamento ottimistico → `PATCH` con `If-Match` → in caso di `409/412` torna indietro e spiega
   il motivo ("Lavatesta occupato alle 11:05"). **Annulla** disponibile per 10 secondi.
 - **Avvisare il cliente?** Spostando o annullando, il pannello chiede: "Avviso il cliente?" (sì di default).

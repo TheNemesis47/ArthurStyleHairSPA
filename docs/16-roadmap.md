@@ -1,47 +1,58 @@
 # 16 — Roadmap
 
-Stato: `bozza` · Le durate sono **stime** per una persona assistita da agenti. Vanno ricalibrate dopo la Fase 1 con
-la velocità reale. I task diventano issue GitHub con la skill `to-tickets`.
+Stato: `in revisione` (riordinata il 31/10/2026: trasferimento a Malta fra ~2 mesi, budget 1.500 € + 40 €/mese) ·
+Le durate sono **stime** per una persona assistita da agenti; vanno ricalibrate dopo F1. I task diventano issue GitHub con `to-tickets`.
 
 ## Panoramica
 
+**Cosa cambia rispetto alla prima versione:** Arturo si trasferisce fra circa 2 mesi e non si sa se Firenze resterà
+aperta. Quindi:
+
+1. la **vetrina** (F3a) esce **per prima**, senza aspettare il motore: brand, servizi (mock), lavori, recensioni, WhatsApp,
+   "Malta — coming soon" con lista d'attesa. Serve a portare pubblico a Malta **adesso**;
+2. il sistema di prenotazione esce già **multi-sede** (ADR-0008/0009): al go-live si attiva la sede che in quel momento è
+   operativa (Firenze, Malta o entrambe);
+3. i promemoria sono **push** (Q19), quindi l'app (F5) diventa importante e segue subito il go-live web.
+
 ```mermaid
 gantt
-  title Arthur Style — fasi (inizio ipotetico 9/11/2026, durate stimate)
+  title Arthur Style — fasi (inizio 2/11/2026, durate stimate)
   dateFormat  YYYY-MM-DD
   axisFormat  %d/%m
   section Fondamenta
-  F0 Discovery e setup                 :f0, 2026-11-09, 2w
-  D-U-N-S + account store (attesa)     :crit, dn, 2026-11-09, 5w
-  section Prodotto
-  F1 Motore prenotazioni + API         :f1, after f0, 3w
-  F2 Pannello gestione MVP             :f2, after f1, 3w
-  F3 Sito vetrina + prenota web        :f3, after f0, 6w
-  F4 Notifiche, hardening, GO-LIVE web :crit, f4, after f2, 2w
-  F5 App iOS/Android                   :f5, after f4, 4w
-  F6 MCP e agenti                      :f6, after f4, 2w
-  F7 Crescita e Malta                  :f7, after f5, 6w
+  F0 Setup (repo, CI, VPS, dominio)      :f0, 2026-11-02, 1w
+  D-U-N-S + account store (attesa)       :crit, dn, 2026-11-02, 5w
+  section Vetrina
+  F3a Sito vetrina IT/EN (senza prenot.) :f3a, 2026-11-02, 3w
+  M0 Vetrina online                      :milestone, m0, after f3a, 0d
+  section Prenotazioni
+  F1 Motore prenotazioni + API           :f1, after f0, 3w
+  F2 Pannello di gestione (PWA)          :f2, after f1, 3w
+  F3b Prenotazione web                   :f3b, after f2, 1w
+  F4 Notifiche, hardening, GO-LIVE       :crit, f4, after f3b, 2w
+  section Dopo il go-live
+  F5 App iOS/Android + push              :f5, after f4, 4w
+  F6 MCP e agenti                        :f6, after f5, 2w
+  F7 Malta e crescita                    :f7, after f4, 8w
 ```
 
-> Il periodo natalizio è pieno di lavoro per un salone: test con Arturo e go-live vanno concordati in modo da **non**
-> cadere a dicembre. Meglio un go-live a gennaio con un'agenda tranquilla.
-
-La F3 (design e sito) procede **in parallelo** con F1-F2: il design non dipende dal backend, la pagina servizi e la
-prenotazione si collegano all'API quando è pronta.
+> Il go-live delle prenotazioni (fine F4) cade a metà gennaio: dopo le feste e vicino al trasferimento. Va deciso con
+> Arturo **quale sede attivare** in quel momento (Q27, Q28).
 
 **Milestone:**
 
-| Milestone | Contenuto | Uscita |
-|-----------|-----------|--------|
-| **M1 — "Agenda vera"** | F1 + F2: Arturo usa il pannello al posto dell'agenda attuale, con le prenotazioni inserite a mano | Fine F2 |
-| **M2 — "Online"** | F3 + F4: sito pubblico, prenotazione online, notifiche, backup, sicurezza verificata | **Go-live web** |
-| **M3 — "In tasca"** | F5: app sugli store | Pubblicazione |
-| **M4 — "Agente"** | F6: Arturo gestisce l'agenda anche tramite agente | Rilascio MCP |
-| **M5 — "Malta ready"** | F7: seconda sede attivabile, contenuti EN completi, lista d'attesa | Su richiesta |
+| Milestone | Contenuto | Uscita stimata |
+|-----------|-----------|----------------|
+| **M0 — "Vetrina"** | F3a: sito pubblico IT/EN con brand, servizi, lavori, recensioni, contatti, WhatsApp, Malta coming soon | ~fine novembre |
+| **M1 — "Agenda vera"** | F1 + F2: Arturo usa il pannello (PC e telefono) per l'agenda | ~fine dicembre |
+| **M2 — "Prenotazioni online"** | F3b + F4: prenotazione dal sito, OTP email, notifiche, backup, sicurezza verificata | **~metà gennaio** |
+| **M3 — "In tasca"** | F5: app sugli store con promemoria push | ~febbraio |
+| **M4 — "Agente"** | F6: gestione tramite agente (dati pseudonimizzati) | ~febbraio–marzo |
+| **M5 — "Malta"** | F7: sede di Malta attiva (indirizzo, orari, Google Business Malta), eventuale chiusura di Firenze | Quando l'indirizzo è noto |
 
 ---
 
-## F0 — Discovery e fondamenta (≈ 2 settimane)
+## F0 — Fondamenta (≈ 1 settimana)
 
 | # | Task | Criterio di accettazione |
 |---|------|--------------------------|
@@ -49,10 +60,11 @@ prenotazione si collegano all'API quando è pronta.
 | F0.2 | Questionario per Arturo (`to-questionnaire`) | Listino completo (servizi, prezzi, fasi, tempi di posa), orari, operatori, postazioni, policy |
 | F0.3 | **Avvio D-U-N-S + account Apple/Google organization** (`wizard`) | Richieste inviate e numero di pratica registrato |
 | F0.4 | Dominio, Cloudflare, email aziendale, account intestati al cliente con MFA | Inventario degli account in `docs/accounts.md` (senza segreti) |
-| F0.5 | Raccolta del brand in `brand/` (logo SVG, palette, font con licenza web, foto) | File presenti, licenze dei font verificate |
+| F0.5 | ~~Brand in `brand/`~~ ✅ **fatto** il 31/10/2026: logo vettoriale, palette, token, font OFL, 2 foto provvisorie | — |
+| F0.10 | Accesso al **Google Business Profile** + decisione su **Treatwell** (Q43) + indirizzo corretto (Q44) | Indirizzo identico su Google, sito e note legali |
 | F0.6 | Scaffolding del monorepo (pnpm + Turborepo, config condivise, regole ESLint di sicurezza) | `pnpm build`, `pnpm test`, `pnpm lint` verdi su repo vuota |
 | F0.7 | CI di base + gitleaks + CodeQL + Renovate + branch protection | PR di prova bloccata da un segreto finto |
-| F0.8 | Provisioning VPS staging + prod con Ansible | `nmap` da fuori: solo 443/80. SSH solo via Tailscale |
+| F0.8 | Provisioning della **tua VPS** (prod + staging isolato) con Ansible | `nmap` da fuori: solo 443/80. SSH solo via Tailscale. Dettagli VPS: Q45 |
 | F0.9 | Contratti: sviluppo, manutenzione, DPA | Firmati |
 
 ## F1 — Motore prenotazioni + API (≈ 3 settimane)
@@ -80,12 +92,14 @@ prenotazione si collegano all'API quando è pronta.
 | F2.6 | Clienti: ricerca, scheda, note, export/anonimizza | Export JSON valido; anonimizzazione irreversibile |
 | F2.7 | Realtime SSE | Una prenotazione creata da un altro dispositivo appare in < 2 s |
 | F2.8 | Audit log consultabile | Ogni modifica tracciata con l'attore |
-| F2.9 | Galleria con liberatorie + rimozione EXIF (ADMIN-21) | Una foto con GPS caricata risulta senza metadati |
 | F2.10 | Web Push ad Arturo dalla PWA (ADMIN-23) | Notifica ricevuta su iPhone con la PWA installata |
 | F2.11 | Controllo notturno delle invarianti ([06 §8](06-motore-prenotazioni.md)) | Alert di prova su un'anomalia creata a mano in staging |
 | **M1** | Arturo usa il pannello per **2 settimane** in parallelo all'agenda attuale | Lista di modifiche raccolta e prioritizzata |
 
-## F3 — Sito vetrina + prenotazione web (≈ 6 settimane, in parallelo)
+## F3 — Sito: F3a vetrina (≈ 3 settimane, subito) · F3b prenotazione web (≈ 1 settimana, dopo F2)
+
+F3a = righe F3.1–F3.5, F3.7–F3.10 (senza prenotazione: il pulsante "Prenota" porta a WhatsApp/telefono finché F3b non è pronta; i servizi si leggono dal listino
+[mock](21-dati-mock.md) in un file statico, poi dall'API). F3b = F3.6.
 
 | # | Task | Criterio di accettazione |
 |---|------|--------------------------|
@@ -98,14 +112,14 @@ prenotazione si collegano all'API quando è pronta.
 | F3.7 | SEO: JSON-LD, sitemap, hreflang, OG | Rich Results Test valido; Search Console configurata |
 | F3.8 | Integrazione Instagram (app Meta, token, sync) | Feed aggiornato; fallback dalla cache testato |
 | F3.9 | Umami + eventi di conversione | Funnel visibile |
+| F3.10 | Pagina **Malta — coming soon** + lista d'attesa (double opt-in) + galleria e testi in `content/` (EXIF rimossi in build) | Iscrizione di prova con conferma via email |
 
 ## F4 — Notifiche, hardening, GO-LIVE web (≈ 2 settimane)
 
 | # | Task | Criterio di accettazione |
 |---|------|--------------------------|
 | F4.1 | Email transazionali IT/EN (React Email) + `.ics` + link di gestione | SPF/DKIM/DMARC ok; test di deliverability (Gmail, Outlook, iCloud) |
-| F4.2 | Promemoria 24 h / 2 h; notifica ad Arturo | Ripianificazione corretta dopo uno spostamento |
-| F4.3 | (Opzionale) SMS/WhatsApp con limiti anti-pumping | Tetto di spesa attivo |
+| F4.2 | Promemoria via **email** per chi non ha l'app (le push arrivano con F5); notifica ad Arturo (Web Push PWA + email) | Ripianificazione corretta dopo uno spostamento |
 | F4.4 | Backup pgBackRest + **restore test** | Restore cronometrato ≤ RTO |
 | F4.5 | Osservabilità + alert | Alert di prova ricevuti |
 | F4.6 | Audit di sicurezza: `audit-context-building`, ZAP, **sqlmap**, checklist [12 §9](12-sicurezza.md) | Zero High/Critical aperti |
@@ -145,5 +159,5 @@ prenotazione si collegano all'API quando è pronta.
     (Payment Element) con un hold esteso solo dopo l'avvio del pagamento (es. 20'), il webhook conferma e il rimborso
     automatico parte se la conferma arriva dopo la scadenza.
 - Gift card (SITE-13) · journal SEO (SITE-12) · Wallet pass (APP-10) · MCP pubblico (MCP-07)
-- **Playbook Malta:** nuova sede (`locations`, IVA, fuso, telefono) → contenuti EN → profilo Google Malta → ri-consenso
+- **Playbook Malta** (M5, priorità alta dato il trasferimento): nuova sede (`locations`, IVA, fuso, telefono) → contenuti EN → profilo Google Malta → ri-consenso
   marketing dei clienti → pagina "Ci siamo trasferiti" con 301 se Firenze chiude → nuove informative (nuovo titolare).

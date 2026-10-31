@@ -1,6 +1,6 @@
 # 05 — Modello dati (PostgreSQL 18)
 
-Stato: `in revisione` · Decisione: [ADR-0002](adr/0002-postgres-esclusione-risorse.md) · Termini: [glossario](glossario.md)
+Stato: `in revisione` · Decisioni: [ADR-0002](adr/0002-postgres-esclusione-risorse.md), [ADR-0009](adr/0009-multi-tenancy.md) · Termini: [glossario](glossario.md)
 
 ## 1. L'idea in una frase
 
@@ -10,6 +10,8 @@ occupino la stessa risorsa in intervalli che si sovrappongono. Vale per tutti: s
 
 ```mermaid
 erDiagram
+  organizations ||--o{ locations : "ha (max 10)"
+  organizations ||--o{ customers : "ha (condivisi tra sedi)"
   locations ||--o{ resources : ha
   locations ||--o{ services : offre
   locations ||--o{ bookings : riceve
@@ -49,38 +51,54 @@ CREATE EXTENSION IF NOT EXISTS pg_trgm;     -- ricerca clienti per nome (indice 
 -- NB: le tabelle di Better Auth (users, sessions, …) devono usare id uuid: configurare la generazione degli ID
 --     di Better Auth (opzione advanced/database generateId) PRIMA della prima migrazione. Di default usa id testuali.
 
+-- ──────────────────────── Organizzazioni (tenant) ────────────────────────
+-- Un'organizzazione = un brand/cliente (oggi solo "Arthur Style"). Vedi ADR-0009.
+CREATE TABLE organizations (
+  id              uuid PRIMARY KEY DEFAULT uuidv7(),
+  slug            text NOT NULL UNIQUE CHECK (slug ~ '^[a-z0-9-]{2,40}$'),   -- 'arthur-style'
+  name            text NOT NULL,
+  brand           jsonb NOT NULL DEFAULT '{}',          -- riferimenti a logo/palette (per un futuro multi-brand)
+  max_locations   integer NOT NULL DEFAULT 10 CHECK (max_locations BETWEEN 1 AND 100),
+  created_at      timestamptz NOT NULL DEFAULT now()
+);
+
 -- ─────────────────────────────── Sedi ───────────────────────────────
 CREATE TABLE locations (
   id              uuid PRIMARY KEY DEFAULT uuidv7(),
-  slug            text NOT NULL UNIQUE CHECK (slug ~ '^[a-z0-9-]{2,40}$'),   -- 'firenze', 'malta'
+  organization_id uuid NOT NULL REFERENCES organizations(id),
+  slug            text NOT NULL CHECK (slug ~ '^[a-z0-9-]{2,40}$'),          -- 'firenze', 'malta'
   name            text NOT NULL,
   country_code    char(2) NOT NULL CHECK (country_code IN ('IT','MT')),
   timezone        text NOT NULL,                       -- 'Europe/Rome' | 'Europe/Malta'
   currency        char(3) NOT NULL DEFAULT 'EUR',
   vat_rate_bp     integer NOT NULL CHECK (vat_rate_bp BETWEEN 0 AND 10000),   -- IT 2200, MT 1800 ⚠️ verificare
   default_locale  text NOT NULL DEFAULT 'it' CHECK (default_locale IN ('it','en')),
-  address         jsonb NOT NULL,                      -- {street:"Via Sant'Egidio 19R", postcode:"50122", city:"Firenze", ...}
+  address         jsonb NOT NULL,                      -- {street:"Via Sant'Egidio …" (Q44), postcode, city:"Firenze", ...}
   geo             point,
-  phone_e164      text,
+  phone_e164      text CHECK (phone_e164 IS NULL OR phone_e164 ~ '^\+[1-9][0-9]{6,14}$'),
+  whatsapp_e164   text CHECK (whatsapp_e164 IS NULL OR whatsapp_e164 ~ '^\+[1-9][0-9]{6,14}$'),   -- pulsante "Scrivici su WhatsApp"
   email           citext,
   legal_info      jsonb NOT NULL DEFAULT '{}',         -- ragione sociale, P.IVA, REA / VAT MT
   status          text NOT NULL DEFAULT 'active' CHECK (status IN ('draft','active','closing','closed')),
   opens_on        date,                                -- per la futura sede di Malta
   created_at      timestamptz NOT NULL DEFAULT now(),
-  updated_at      timestamptz NOT NULL DEFAULT now()
+  updated_at      timestamptz NOT NULL DEFAULT now(),
+  UNIQUE (organization_id, slug),
+  UNIQUE (id, organization_id)                         -- per le FK composte (una prenotazione non cambia organizzazione)
 );
+-- Il limite max_locations si verifica con un trigger BEFORE INSERT (conteggio delle sedi non 'closed').
 
 -- Regole di prenotazione: una riga per sede, versionata
 CREATE TABLE booking_policies (
   location_id               uuid PRIMARY KEY REFERENCES locations(id),
   slot_granularity_min      integer NOT NULL DEFAULT 15 CHECK (slot_granularity_min IN (5,10,15,20,30,60)),
-  min_notice_min            integer NOT NULL DEFAULT 120,
-  max_advance_days          integer NOT NULL DEFAULT 60 CHECK (max_advance_days BETWEEN 1 AND 365),
+  min_notice_min            integer NOT NULL DEFAULT 180,    -- 3 h (Q14)
+  max_advance_days          integer NOT NULL DEFAULT 35 CHECK (max_advance_days BETWEEN 1 AND 365),   -- Q15/Q46
   hold_ttl_sec              integer NOT NULL DEFAULT 600 CHECK (hold_ttl_sec BETWEEN 60 AND 1800),
-  cancel_window_min         integer NOT NULL DEFAULT 1440,   -- disdetta libera fino a 24 h prima
-  reschedule_window_min     integer NOT NULL DEFAULT 1440,
+  cancel_window_min         integer NOT NULL DEFAULT 5760,   -- disdetta libera fino a 4 giorni prima (Q16)
+  reschedule_window_min     integer NOT NULL DEFAULT 5760,
   max_future_bookings       integer NOT NULL DEFAULT 3,      -- per cliente (anti-abuso)
-  require_contact_otp       text NOT NULL DEFAULT 'new_customers' CHECK (require_contact_otp IN ('never','new_customers','always')),
+  require_contact_otp       text NOT NULL DEFAULT 'always' CHECK (require_contact_otp IN ('never','new_customers','always')),  -- OTP email (Q17)
   reminder_offsets_min      integer[] NOT NULL DEFAULT '{1440,120}',
   version                   integer NOT NULL DEFAULT 1,
   updated_at                timestamptz NOT NULL DEFAULT now()
@@ -210,11 +228,13 @@ CREATE TABLE schedule_exceptions (
 CREATE INDEX ON schedule_exceptions USING gist (location_id, during);
 
 -- ───────────────────────────── Clienti ─────────────────────────────
--- Un contatto (email/telefono) NON è unico: una mamma prenota per sé e per i figli con lo stesso numero,
--- un walk-in può non lasciare alcun contatto. Si deduplica nel dominio (+ "unisci" nel pannello), non con UNIQUE.
+-- I clienti appartengono all'ORGANIZZAZIONE (chi prenota a Firenze ritrova il suo profilo a Malta).
+-- Online si prenota solo per sé (Q39): un solo profilo per email VERIFICATA. I clienti inseriti dallo staff
+-- (walk-in, telefono) possono non avere contatti verificati: per loro niente unicità, si deduplica con "unisci".
 CREATE TABLE customers (
   id                    uuid PRIMARY KEY DEFAULT uuidv7(),
-  user_id               uuid REFERENCES users(id),          -- account che gestisce questo profilo (un account → più persone)
+  organization_id       uuid NOT NULL REFERENCES organizations(id),
+  user_id               uuid REFERENCES users(id),          -- se ha un account (app)
   first_name            text NOT NULL CHECK (length(first_name) BETWEEN 1 AND 80),
   last_name             text NOT NULL CHECK (length(last_name) BETWEEN 1 AND 80),
   email                 citext CHECK (email IS NULL OR length(email) <= 254),
@@ -229,10 +249,13 @@ CREATE TABLE customers (
   blocked_at            timestamptz,                                -- non può prenotare online
   last_seen_at          timestamptz,
   anonymized_at         timestamptz,
-  created_at            timestamptz NOT NULL DEFAULT now()
-  -- Regola di DOMINIO (non CHECK): le prenotazioni online richiedono almeno un contatto verificabile;
+  created_at            timestamptz NOT NULL DEFAULT now(),
+  UNIQUE (id, organization_id)
+  -- Regola di DOMINIO (non CHECK): le prenotazioni online richiedono un'email verificata;
   -- i clienti inseriti dallo staff (walk-in, telefono) possono avere solo il nome.
 );
+CREATE UNIQUE INDEX customers_verified_email_uq ON customers (organization_id, email)
+  WHERE email_verified_at IS NOT NULL AND anonymized_at IS NULL;
 CREATE INDEX customers_email_idx ON customers (email) WHERE anonymized_at IS NULL;
 CREATE INDEX customers_phone_idx ON customers (phone_e164) WHERE anonymized_at IS NULL;
 CREATE INDEX customers_name_trgm ON customers USING gin ((first_name || ' ' || last_name) gin_trgm_ops);
@@ -243,8 +266,9 @@ CREATE TYPE booking_source AS ENUM ('web','app','admin','phone','walk_in','mcp',
 
 CREATE TABLE bookings (
   id                 uuid PRIMARY KEY DEFAULT uuidv7(),
-  location_id        uuid NOT NULL REFERENCES locations(id),
-  customer_id        uuid REFERENCES customers(id),          -- NULL per gli hold (e per hold scaduti/abbandonati)
+  organization_id    uuid NOT NULL,
+  location_id        uuid NOT NULL,
+  customer_id        uuid,                                    -- NULL per gli hold (e per hold scaduti/abbandonati)
   status             booking_status NOT NULL,
   source             booking_source NOT NULL,
   period             tstzrange NOT NULL CHECK (NOT isempty(period) AND lower_inc(period) AND NOT upper_inc(period)),
@@ -266,7 +290,9 @@ CREATE TABLE bookings (
   CHECK (status <> 'held' OR hold_expires_at IS NOT NULL),
   -- un hold non ha ancora cliente; se scade o viene abbandonato resta senza (stati 'expired' / 'cancelled')
   CHECK (status IN ('held','expired','cancelled') OR customer_id IS NOT NULL),
-  UNIQUE (location_id, idempotency_key)
+  UNIQUE (location_id, idempotency_key),
+  FOREIGN KEY (location_id, organization_id) REFERENCES locations (id, organization_id),
+  FOREIGN KEY (customer_id, organization_id) REFERENCES customers (id, organization_id)   -- cliente della stessa organizzazione
 );
 CREATE INDEX bookings_period_idx ON bookings USING gist (location_id, period);
 
@@ -370,6 +396,36 @@ stateDiagram-v2
   cancelled --> [*]
   expired --> [*]
 ```
+
+## 4-bis. Isolamento tra organizzazioni (Row-Level Security) 🔒
+
+Difesa in profondità per il multi-tenant ([ADR-0009](adr/0009-multi-tenancy.md)): anche se una query dimenticasse il
+filtro per organizzazione, il database non restituirebbe dati di un'altra. Ogni transazione dell'applicazione
+imposta l'organizzazione corrente con `SET LOCAL app.org_id = '<uuid>'`. Se la variabile manca, la query **fallisce**
+invece di restituire tutto (*fail closed*).
+
+```sql
+CREATE FUNCTION app_org() RETURNS uuid LANGUAGE sql STABLE AS $$ SELECT current_setting('app.org_id')::uuid $$;
+
+ALTER TABLE locations  ENABLE ROW LEVEL SECURITY;
+ALTER TABLE customers  ENABLE ROW LEVEL SECURITY;
+ALTER TABLE bookings   ENABLE ROW LEVEL SECURITY;
+ALTER TABLE allocations ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY org_isolation ON locations  USING (organization_id = app_org()) WITH CHECK (organization_id = app_org());
+CREATE POLICY org_isolation ON customers  USING (organization_id = app_org()) WITH CHECK (organization_id = app_org());
+CREATE POLICY org_isolation ON bookings   USING (organization_id = app_org()) WITH CHECK (organization_id = app_org());
+-- tabelle legate alla sede: visibili solo se la sede è dell'organizzazione corrente
+CREATE POLICY org_isolation ON allocations
+  USING (location_id IN (SELECT id FROM locations))           -- locations è a sua volta filtrata dalla RLS
+  WITH CHECK (location_id IN (SELECT id FROM locations));
+```
+
+- Stessa policy (via `location_id`) su `resources`, `services`, `working_hours`, `schedule_exceptions`, `booking_items`, ecc.
+- Il ruolo `app_api` **non** è proprietario delle tabelle e non ha `BYPASSRLS`: la RLS gli si applica.
+- I job di sistema che lavorano su più organizzazioni (scadenza hold, promemoria) iterano per organizzazione
+  impostando `app.org_id` a ogni giro. **Nessun** ruolo applicativo ha `BYPASSRLS`.
+- Il vincolo `EXCLUDE` continua a valere **globalmente**: la RLS filtra le letture, non indebolisce i vincoli.
 
 ## 5. Ruoli PostgreSQL (minimo privilegio) 🔒
 

@@ -5,6 +5,7 @@ qui, **poi** si usa nel codice.
 
 | Italiano (UI e doc) | Codice (EN) | Definizione |
 |---------------------|-------------|-------------|
+| **Organizzazione** | `Organization` | Il cliente/brand (tenant): oggi "Arthur Style". Contiene fino a 10 sedi e i clienti condivisi tra le sedi ([ADR-0009](adr/0009-multi-tenancy.md)) |
 | **Sede** | `Location` | Un salone fisico, con fuso, valuta, IVA, lingua predefinita e dati legali. Firenze è la prima, Malta la prossima |
 | **Risorsa** | `Resource` | Qualsiasi cosa che si può occupare per un intervallo: operatore, postazione, attrezzatura |
 | **Operatore** | `Resource(kind=staff)` | Persona che esegue i trattamenti. Può essere collegata a un utente del pannello |
@@ -45,3 +46,6 @@ qui, **poi** si usa nel codice.
 | **Conferma in due fasi** | `prepare_*` / `confirm_*` | Schema dei tool MCP: anteprima, poi esecuzione |
 | **Kill switch** | `mcp_enabled=false` | Interruttore che disattiva subito tutti gli agenti |
 | **Audit log** | `AuditLog` | Registro immutabile di chi ha fatto cosa |
+| **Pseudonimizzazione** | `pseudonymize` | Forma ridotta del cliente mostrata agli agenti ("Maria R." + id opaco), senza contatti |
+| **Ciocche** | `strands` | Motivo grafico del brand: linee sottili a ventaglio (logo, separatori, hero 3D) |
+| **RLS** | Row-Level Security | Filtro del database che rende visibili solo le righe dell'organizzazione corrente (`app.org_id`) |

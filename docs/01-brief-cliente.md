@@ -1,61 +1,69 @@
 # 01 — Brief cliente
 
-Stato: `bozza` — da validare con Arturo (vedi [17 Domande aperte](17-domande-aperte.md))
+Stato: `in revisione` — aggiornato il 31/10/2026 con le prime risposte (vedi [17](17-domande-aperte.md))
 
 ## Il cliente
 
 | Campo | Valore | Note |
 |-------|--------|------|
 | Titolare | **Arturo** | Parrucchiere con **oltre 20 anni di esperienza** |
-| Insegna | **Arthur Style Hair S.P.A.** | Nome abbreviato del brand: **Arthur Style** (con la *h*) |
-| Indirizzo | **Via Sant'Egidio 19R, 50122 Firenze (FI)** | A Firenze la "R" (numero rosso) indica gli esercizi commerciali. Va scritta **sempre** "19R" su Google Business Profile, nello schema.org e sulle mappe, altrimenti il pin finisce al civico nero 19 |
-| Telefono | +39 055 285510 | ⚠️ DA VERIFICARE: trovato su una directory online, non confermato |
-| Instagram | `@arthurstylehairspa` | ❓ DOMANDA: handle da confermare. Secondo te è "tutto attaccato, tutto minuscolo" |
-| Forma giuridica / P.IVA | ❓ | Serve per il footer del sito (obbligo P.IVA, vedi [14](14-privacy-e-legale.md)) e per gli account developer |
-| Significato di "S.P.A." | ❓ | Quasi certamente "Hair **Spa**" (benessere) e **non** S.p.A. (società per azioni). Va chiarito, perché nelle note legali la ragione sociale deve essere esatta |
+| Brand | **Arthur Style · Hair Spa** | Logo: "Arthur Style" in corsivo calligrafico + "HAIR SPA". Su Google la scheda si chiama "Arthur Style Hair". **"SPA" = Hair Spa**, non S.p.A. |
+| Indirizzo | ❓ **Da chiarire (Q44)** | Indicato da te: *Via Sant'Egidio 19*. Directory: *19R, 50122*. **Google: Via Sant'Egidio 5, 50121 Firenze.** A Firenze la "R" indica i civici commerciali: l'indirizzo va scritto **identico** ovunque (Google, sito, schema.org) |
+| Telefono | **+39 353 491 8255** | Confermato, coincide con Google |
+| WhatsApp | **+39 331 754 5064** | WhatsApp Business (app) già in uso |
+| Instagram | [`@arthurstylehairspa`](https://www.instagram.com/arthurstylehairspa/) | Gestito da te |
+| Google | Scheda esistente: **4,7★ su 140 recensioni** | Accesso in arrivo. Le recensioni sono un patrimonio: vanno protette e fatte crescere |
+| Treatwell | Presente: **4,5★ su 8 recensioni** | ❓ Q43: se le prenotazioni online sono attive bisogna coordinarle, altrimenti ci saranno doppie prenotazioni |
+| Forma giuridica / P.IVA | ❓ Arriva più avanti | Serve per il footer (obbligo P.IVA) e per gli account |
+| Orari attuali | Da Google: chiuso il lunedì, apre martedì alle 9 | Per il sistema: mar–ven 9–19, sab 9–18 (mock, [21](21-dati-mock.md)) |
 
 ## Situazione attuale
 
-- Il salone è operativo a Firenze, in pieno centro storico (zona Santa Croce / Sant'Ambrogio).
-- **Instagram è già gestito da te:** le immagini sono già prodotte e pubblicate. Il sito deve riprendere **la stessa identità visiva** (palette, font, tono). ❓ DOMANDA: servono i file sorgente (logo vettoriale, palette, font, template dei post).
-- Non sappiamo come gestisce oggi le prenotazioni (agenda cartacea? WhatsApp? Treatwell/Fresha/Uala?). È fondamentale: se esiste uno storico clienti, serve una **migrazione dati**. Se c'è un contratto con un marketplace, potrebbero esserci vincoli. ❓ DOMANDA
+- Il salone è operativo nel centro storico di Firenze (zona Duomo / Sant'Ambrogio). Dalle foto: pavimento in marmo, specchi, poltrone nere, banconi bianchi.
+- **Instagram è già gestito da te**, le grafiche sono pubblicate. Il logo esistente (script calligrafico taupe su crema) è stato
+  **ricostruito in vettoriale** in [brand/](../brand/README.md), con palette e tipografia.
+- Foto disponibili: 2 non professionali (provvisorie). Le foto professionali arriveranno più avanti.
+- Prenotazioni oggi: probabilmente telefono, WhatsApp e Treatwell ❓ (Q11, Q43).
 
 ## Obiettivi di business
 
-1. **Presenza online forte e moderna:** il sito deve fare colpo (effetti GSAP/Three.js) e trasmettere 20 anni di mestiere.
-2. **Prenotazioni self-service 24/7** da sito e app: meno telefonate, meno buchi in agenda, meno no-show grazie ai promemoria.
-3. **Controllo totale per Arturo:** calendario chiaro, trattamenti con prezzi e durate modificabili in autonomia.
-4. **Preparare il trasferimento a Malta.** È l'obiettivo strategico che spiega la spinta su internet:
-   - Costruire **adesso** un pubblico e una reputazione online (recensioni, Instagram, sito in inglese) da portare con sé.
-   - Il sistema deve supportare **una nuova sede** (fuso, IVA, lingua, telefono +356) **senza riscrivere nulla**.
-   - Lista d'attesa e interesse per Malta già raccolti dal sito (pagina "Coming soon to Malta").
-5. **Gestione delegabile a un agente AI** tramite MCP: riepilogo della giornata, spostamenti, buchi da riempire, risposte rapide.
+1. **Presenza online forte e moderna:** il sito deve fare colpo (GSAP/Three.js) e trasmettere 20 anni di mestiere.
+2. **Prenotazioni self-service 24/7** da sito e app, **promemoria push** per ridurre i no-show.
+3. **Controllo per Arturo da PC e telefono:** calendario chiaro, trattamenti, prezzi e durate.
+4. **Trasferimento a Malta fra circa 2 mesi (≈ gennaio 2027).** È il motivo della spinta su internet:
+   - costruire **adesso** pubblico e reputazione (Instagram, sito in inglese) da portare a Malta;
+   - non si sa se Firenze chiuderà o resterà aperta: il sistema è **modulare, fino a 10 negozi** ([ADR-0008](adr/0008-multi-sede-malta.md), [ADR-0009](adr/0009-multi-tenancy.md));
+   - **a Malta lavorerà solo Arturo**: per questo il cliente non sceglie l'operatore, ma solo sede e servizi.
+5. **Gestione delegabile a un agente AI** tramite MCP (piano consumer → dati dei clienti pseudonimizzati).
 
 ## Pubblico
 
 | Segmento | Bisogno | Canale principale |
 |----------|---------|-------------------|
-| Clienti abituali di Firenze | Riprenotare in fretta, promemoria | App, WhatsApp, link di gestione |
-| Nuovi clienti locali | Vedere i lavori, i prezzi, prenotare | Google (ricerca locale), Instagram → sito |
+| Clienti abituali di Firenze | Riprenotare in fretta, promemoria | App (push), WhatsApp |
+| Nuovi clienti locali | Vedere lavori e prezzi, prenotare | Google (140 recensioni!), Instagram → sito |
 | Turisti e stranieri a Firenze | Sito in inglese, prenotazione semplice | Google Maps, sito EN |
 | Futuro pubblico di Malta | Fiducia nel brand prima dell'apertura | Instagram, sito EN, lista d'attesa |
 
 ## Brand e tono
 
-- **Posizionamento:** artigianalità + esperienza (20+ anni) + stile contemporaneo. "Spa" suggerisce cura e benessere, non solo taglio.
+- **Identità:** [brand/README.md](../brand/README.md). Script calligrafico (Pinyon Script) solo per il logo; Jost per tutto il resto;
+  palette Carta, Inchiostro, Espresso, Castano, Caramello, Marmo; motivo grafico delle **ciocche** (linee sottili).
+- **Posizionamento:** artigianalità + esperienza (20+ anni) + cura (hair spa) + stile contemporaneo.
 - **Tono:** caldo, sicuro, elegante. Niente gergo tecnico verso il cliente.
-- **Visual:** da derivare dalle grafiche Instagram già prodotte. ❓ DOMANDA: caricare i materiali in `brand/` (logo SVG, palette HEX, font con licenza web, foto).
-- **Foto:** servono foto professionali di salone, Arturo e lavori (prima/dopo). Per le foto dei clienti serve la **liberatoria**, sia per Instagram sia per il sito (vedi [14](14-privacy-e-legale.md)).
 
-## Vincoli noti
+## Budget e vincoli
 
-- Hosting su **VPS** (scelta tua).
-- Budget, tempi e numero di operatori: ❓ DOMANDA.
-- Gli account esterni (dominio, store, Google Business, Meta, provider email) vanno **intestati al cliente**, con te come amministratore delegato. Così se il rapporto finisce il cliente non resta ostaggio, e Apple lo richiede di fatto (vedi [10](10-app-mobile.md), linea guida 4.2.6).
+- **1.500 € una tantum + 40 €/mese** (Q32): vedi la verifica di sostenibilità in [20](20-costi.md).
+- Hosting sulla **tua VPS** (dettagli in Q45). Account esterni **intestati al cliente**.
+- Contenuti (testi, galleria) gestiti **da noi**: Arturo gestisce solo agenda, clienti, trattamenti e prezzi.
+- Il consulente privacy lo individua il cliente.
 
 ## Fuori ambito (v1)
 
-- E-commerce di prodotti (shampoo ecc.).
+- E-commerce di prodotti.
 - Gestionale fiscale o registratore telematico: le prenotazioni **non** sostituiscono lo scontrino elettronico.
-- Gestione paghe e turni del personale oltre la disponibilità per le prenotazioni.
-- Prodotto multi-tenant per altri saloni. Il codice non lo impedisce, ma non è un obiettivo (vedi [ADR-0001](adr/0001-monorepo-typescript.md)).
+- Paghe e turni del personale oltre la disponibilità per le prenotazioni.
+- Automazioni WhatsApp (servirebbe la WhatsApp Business **API**, a pagamento): WhatsApp resta manuale, con il pulsante "Scrivici".
+- Prenotazioni per conto di altre persone (Q39).
+- Rivendita della piattaforma ad altri saloni come SaaS: l'architettura la **permette** ([ADR-0009](adr/0009-multi-tenancy.md)), ma non è un obiettivo di questa commessa.

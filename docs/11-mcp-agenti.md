@@ -7,6 +7,16 @@ Stato: `bozza` · App: `apps/mcp` · Skill: `mcp-builder`, `sharp-edges`, `diffe
 > Durante la stesura il dominio non era raggiungibile da questo ambiente, quindi i dettagli qui sotto vengono da fonti
 > secondarie aggiornate al 2026 e vanno confermati.
 
+## 0. Piano consumer: conseguenze (Q42) 🔒
+
+Arturo userà un assistente AI con un **piano consumer**. Quindi:
+
+- **Pseudonimizzazione di default** (MCP-08): i tool restituiscono "Maria R." e servizi e orari, mai email o telefono.
+  Il nome completo e i contatti restano nel pannello. Lo scope `customers:read` non è concedibile agli agenti finché si usa un piano consumer.
+- Nelle impostazioni privacy dell'assistente va **disattivato l'uso delle conversazioni per l'addestramento**, se l'opzione esiste ⚠️ da verificare sul piano scelto.
+- ⚠️ Da verificare (Q47): se e come il piano consumer supporta i **connettori MCP remoti personalizzati**. Se non li supporta, F6 slitta o richiede un piano diverso.
+- L'informativa privacy cita l'uso di un assistente AI per la gestione dell'agenda ([14](14-privacy-e-legale.md)).
+
 ## 1. Scopo
 
 Permettere ad Arturo (o a te, per suo conto) di gestire il salone **parlando con un agente**:
@@ -79,7 +89,7 @@ strutturato (`structuredContent`) + breve testo, **annotations** corrette (`read
 | `prepare_booking_change` | agenda:write | read | **Fase 1** di ogni modifica: calcola l'effetto (crea, sposta, annulla, blocca), controlla i conflitti, restituisce un'anteprima + `confirmation_id` (valido 5 min, legato a token e parametri) |
 | `confirm_booking_change` | agenda:write | **destructive** | **Fase 2**: esegue l'operazione preparata. Se nel frattempo lo stato è cambiato → errore e nuova preparazione |
 | `prepare_catalog_change` / `confirm_catalog_change` | catalog:write | destructive | Stesso schema in due fasi per prezzi e servizi |
-| `search_customers` | customers:read | read | Ricerca per nome (min 3 caratteri), max 10 risultati, contatti mascherati di default |
+| `search_customers` | agenda:read | read | Ricerca per nome (min 3 caratteri), max 10 risultati, **solo forma pseudonimizzata** ("Maria R.") e id opaco |
 | `get_stats` | stats:read | read | Occupazione, no-show, incasso stimato, per periodo |
 
 **Esclusi per scelta** (MCP-05): esecuzione di SQL, export massivo dei clienti, invio di messaggi liberi ai clienti,

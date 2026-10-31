@@ -52,7 +52,8 @@ nessun requisito.
 ## 3. Algoritmo di disponibilità
 
 Input: `locationId`, `serviceIds[]` (in ordine), `staffPreference` (id | `any`), intervallo di date (max 31 giorni),
-istante corrente (porta `Clock`).
+istante corrente (porta `Clock`). **Dal sito e dall'app `staffPreference` è sempre `any`**: il cliente non sceglie
+l'operatore (Q21). Solo il pannello può indicarne uno.
 
 ```text
 1. Carica la policy della sede: granularità G, preavviso minimo N, orizzonte massimo H.
@@ -124,12 +125,12 @@ POST /v1/booking-holds
   (`hold_session_hash`), che non sia scaduto, che l'OTP sia valido se richiesto e che non si superi
   `max_future_bookings`. Poi `UPDATE status='confirmed'`, crea il cliente se manca e genera il token di gestione.
   Il vincolo I2 (cliente) viene controllato **adesso**, perché l'hold non aveva cliente.
-- **Identità del cliente alla conferma** (BOOK-07, BOOK-18):
-  - "nuovo cliente" ai fini dell'OTP = **contatto mai verificato**. Un'email già presente in archivio ma mai
-    verificata richiede comunque l'OTP: altrimenti chiunque potrebbe prenotare a nome di un altro;
-  - dopo la verifica, il contatto mostra i profili collegati ("Maria", "Luca (figlio)") o "un'altra persona" → nuovo profilo;
-  - i **no-show** contano per il blocco automatico solo sulle prenotazioni con contatto verificato. Un malintenzionato non può far bloccare un altro cliente;
-  - `max_future_bookings` si applica per profilo **e** per contatto (anti-abuso con profili multipli).
+- **Identità del cliente alla conferma** (BOOK-07, Q17, Q39):
+  - senza login, **ogni** prenotazione richiede l'OTP via email (policy `always`). Nell'app, il login (OTP una tantum) vale come verifica;
+  - si prenota **solo per sé**: un'email verificata corrisponde a **un** profilo cliente per organizzazione (indice unico
+    `customers_verified_email_uq`). Se esiste un profilo creato dallo staff con la stessa email non verificata, il pannello propone di unirli;
+  - i **no-show** contano per il blocco automatico solo sulle prenotazioni verificate: un malintenzionato non può far bloccare un altro cliente;
+  - `max_future_bookings` si applica per profilo (default 3).
 - **Pannello / MCP / app con utente loggato:** possono creare direttamente `confirmed` (stessa transazione, stessi vincoli).
 
 ## 5. Spostamento e annullamento
@@ -171,7 +172,7 @@ Arturo a volte **vuole** incastrare un cliente sopra un altro. Il flusso è ques
 | E10 | Utente che apre 20 schede e crea 20 hold | Max **1 hold attivo** per sessione/dispositivo e max N per IP all'ora. Il nuovo hold sostituisce il vecchio |
 | E11 | Bot che "occupa" tutti gli slot con hold (inventory exhaustion, OWASP API6) | Turnstile prima dell'hold, rate limit, TTL breve, allarme se gli hold sono > X % dell'agenda del giorno |
 | E12 | Stesso cliente: due prenotazioni sovrapposte da web e app | Bloccato da I2 |
-| E13 | Il cliente disdice dopo la finestra di disdetta | Il link/app non lo consente e mostra "chiama il salone". Il pannello può sempre |
+| E13 | Il cliente disdice dopo la finestra di disdetta (meno di **4 giorni** prima) | Il link e l'app non lo consentono e mostrano telefono e WhatsApp del salone. Il pannello può sempre |
 | E14 | Prenotazione a cavallo della mezzanotte | Non ammessa (`CHECK` nel dominio: un appuntamento si svolge in un solo giorno locale) |
 | E15 | Sede di Malta con fuso diverso dal cliente (turista) | Orari mostrati **nel fuso della sede**, con etichetta ("ora di Malta") |
 | E16 | Festività ricorrenti (es. 24/06 San Giovanni a Firenze) | Precaricate in `holidays`, attivate come `closed` con un clic |
@@ -214,5 +215,8 @@ Il 31/10/2026 lo schema SQL di [05](05-modello-dati.md) è stato caricato su un 
 | 200 transazioni concorrenti senza lock advisory | ✅ 1 successo · ⚠️ 199 deadlock · ~200 s |
 | 200 transazioni concorrenti **con** lock advisory | ✅ 1 successo · 199 `23P01` · 0 deadlock · ~2 s |
 | Sovrapposizione forzata → annullamento di quella sotto → "riprotezione" | ✅ `forced=false`, nuovo inserimento sopra **rifiutato** |
+
+Seconda verifica dopo l'introduzione del multi-tenant (organizzazioni + RLS): tutti i test superati, dettaglio in
+[research](research/2026-10-31-verifica-esclusione-postgres.md#seconda-verifica--multi-tenant-e-rls-31102026).
 
 In F1 gli stessi test diventano test di integrazione automatici (Testcontainers con **PostgreSQL 18**).

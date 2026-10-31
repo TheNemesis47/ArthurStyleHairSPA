@@ -49,3 +49,21 @@ Esito: 1 successo, **199 `23P01`** (violazione del vincolo di esclusione), 0 dea
 
 - Questi script diventano test di integrazione Vitest + Testcontainers (**PostgreSQL 18**), parte della CI (NFR-01).
 - La funzione che calcola le chiavi del lock (`resource_id:giorno_locale`, ordinate) sta in `packages/db` e la usano **tutti** i percorsi di scrittura (API, MCP, worker).
+
+## Seconda verifica — multi-tenant e RLS (31/10/2026)
+
+Dopo l'introduzione di `organizations` e della Row-Level Security ([ADR-0009](../adr/0009-multi-tenancy.md)) lo schema
+aggiornato è stato ricaricato su PostgreSQL 16 e verificato con un ruolo `app_api` non proprietario:
+
+| Test | Esito |
+|------|-------|
+| Stesso slug di sede (`firenze`) in due organizzazioni | ✅ ammesso |
+| Seconda email **verificata** uguale nella stessa organizzazione | ✅ rifiutata (`customers_verified_email_uq`) |
+| Walk-in con la stessa email non verificata | ✅ ammesso |
+| Prenotazione con cliente di un'altra organizzazione | ✅ rifiutata (FK composta) |
+| Query senza `app.org_id` impostato | ✅ **errore** (fail closed) |
+| Organizzazione A vede solo i propri clienti e le proprie sedi | ✅ |
+| Inserire una prenotazione per l'organizzazione B mentre si è in A | ✅ rifiutata (policy RLS) |
+| `EXCLUDE` con RLS attiva | ✅ sovrapposizione rifiutata |
+| Organizzazione B vede le allocazioni di A | ✅ no (0 righe) |
+| Regressione: sovrapposizione, annullamento → trigger, hold → expired | ✅ |

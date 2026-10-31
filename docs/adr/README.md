@@ -16,5 +16,6 @@ e il vecchio passa a `Superato da ADR-YYYY`.
 | [0006](0006-mcp-processo-separato.md) | Server MCP come processo separato sullo stesso dominio applicativo | Proposto |
 | [0007](0007-vps-docker-caddy-cloudflare.md) | VPS UE con Docker Compose, Caddy e Cloudflare | Proposto |
 | [0008](0008-multi-sede-malta.md) | Multi-sede dal primo giorno (Firenze → Malta) | Proposto |
+| [0009](0009-multi-tenancy.md) | Multi-tenant pronto (organizzazioni + RLS), fino a 10 sedi | Proposto |
 
 Gli ADR passano ad `Accettato` dopo la chiusura delle domande P0 ([17](../17-domande-aperte.md)).

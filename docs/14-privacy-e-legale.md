@@ -11,10 +11,10 @@ consulente privacy/legale e con il commercialista di Arturo, in Italia e poi a M
 | Tu (sviluppo, hosting, gestione) | **Responsabile del trattamento** (art. 28) | **DPA / nomina a responsabile** firmata con Arturo |
 | Fornitori (hosting, Cloudflare, email, SMS/WhatsApp, push Expo/Apple/Google, Sentry, Stripe, Meta per Instagram) | **Sub-responsabili** | Elenco pubblico + DPA di ciascuno, preferenza per server in UE |
 
-**Agenti AI:** se Arturo usa un assistente (es. Claude) collegato al server MCP, i dati che i tool restituiscono
-(nomi dei clienti, servizi, orari) vengono elaborati dal **fornitore del modello**, che diventa un sub-responsabile.
-Servono quindi: un piano o contratto con termini commerciali e DPA (non un account consumer gratuito), la
-minimizzazione già prevista negli scope (`agenda:read` **senza** contatti, [11 §3](11-mcp-agenti.md)) e una menzione nell'informativa.
+**Agenti AI:** Arturo userà un assistente con **piano consumer** (Q42), quindi senza un DPA dedicato. Per questo i tool MCP
+restituiscono solo dati **pseudonimizzati** ("Maria R.", servizi, orari: niente email né telefono, [11 §0](11-mcp-agenti.md)), si
+disattiva l'uso dei dati per l'addestramento dove possibile e l'informativa ne fa menzione. Se in futuro servisse dare
+all'agente i contatti, va adottato un piano con termini commerciali e DPA.
 
 **Trasferimenti extra-UE:** Expo (push), Apple e Google (APNs/FCM), il fornitore del modello AI ed eventualmente Stripe
 e Sentry possono trattare dati fuori dall'UE. Per ognuno va verificata la base del trasferimento (EU-US Data Privacy
@@ -29,7 +29,8 @@ Commissioner** (Malta), quando la sede maltese sarà operativa.
 |-------------|------|----------------|---------------|
 | Gestione delle prenotazioni | nome, contatti, servizi, orari, note | Contratto (art. 6.1.b) | 24 mesi dall'ultimo appuntamento ❓ |
 | Promemoria e notifiche di servizio | contatti | Contratto / legittimo interesse | Come sopra |
-| Promemoria via WhatsApp | numero di telefono | Contratto + **opt-in** richiesto dalle policy WhatsApp Business | Fino alla revoca dell'opt-in |
+| WhatsApp (manuale, app Business) | numero di telefono, messaggi | Contratto / richiesta del cliente | Gestiti nell'app WhatsApp Business del salone, fuori dal nostro sistema |
+| Notifiche push | token del dispositivo | Contratto | Fino al logout o alla disinstallazione |
 | Uso da parte di agenti AI (MCP) | nomi, servizi, orari (no contatti di default) | Legittimo interesse / contratto (gestione dell'agenda) | Nessuna conservazione presso il fornitore oltre a quanto previsto dal suo DPA ⚠️ |
 | Verifica del contatto (OTP) | email/telefono, IP hash | Legittimo interesse (prevenzione abusi) | 24 h |
 | Account dell'app | come sopra + token push | Contratto | Fino alla cancellazione |
@@ -45,8 +46,7 @@ Allergie (es. alla PPD delle tinture), patologie del cuoio capelluto e gravidanz
 (categoria particolare, art. 9). Indicazioni:
 
 - Il campo note del cliente e le note interne riportano l'avviso **"non inserire informazioni sulla salute"**.
-- Se Arturo deve davvero registrare l'esito di un *patch test* o un'allergia, serve un campo dedicato con **consenso
-  esplicito** (art. 9.2.a), accesso ristretto e cifratura a livello di colonna. È una decisione da prendere con il consulente ❓.
+- **Decisione (Q41): non si registrano allergie né patch test.** Nessun campo dedicato, nessun dato sanitario nel sistema.
 
 ## 3. Cookie e tracciamento
 

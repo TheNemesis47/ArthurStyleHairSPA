@@ -1,6 +1,6 @@
 # 02 — Requisiti
 
-Stato: `bozza`
+Stato: `in revisione` — aggiornato il 31/10/2026 con le risposte del cliente ([17](17-domande-aperte.md))
 
 Priorità **MoSCoW**: **M** = Must (necessario al lancio) · **S** = Should · **C** = Could · **W** = Won't (per ora).
 Ogni requisito ha un ID stabile che si richiama nei ticket, nei test e nei commit.
@@ -29,7 +29,7 @@ Ogni requisito ha un ID stabile che si richiama nei ticket, nei test e nei commi
 | SITE-02 | M | Pagina "Arturo / Chi siamo": storia, 20+ anni di esperienza, filosofia |
 | SITE-03 | M | Pagina Servizi e prezzi, letta **dall'API**: Arturo cambia un prezzo nel pannello e il sito si aggiorna da solo |
 | SITE-04 | M | Galleria lavori con prima/dopo (slider trascinabile) e filtri per categoria |
-| SITE-05 | M | Contatti: indirizzo 19R, mappa con consenso, orari, telefono, WhatsApp, link Instagram |
+| SITE-05 | M | Contatti per sede: indirizzo (Q44), mappa con consenso, orari, telefono **+39 353 491 8255**, pulsante WhatsApp **+39 331 754 5064**, Instagram |
 | SITE-06 | M | CTA "Prenota" sempre visibile, con deep link `/prenota?servizio=…` (usato nella bio Instagram con UTM) |
 | SITE-07 | M | Bilingue IT/EN con `hreflang`. L'italiano è la lingua predefinita a Firenze, l'inglese a Malta |
 | SITE-08 | M | Pagine legali: privacy, cookie, note legali con P.IVA, termini di prenotazione |
@@ -45,15 +45,15 @@ Ogni requisito ha un ID stabile che si richiama nei ticket, nei test e nei commi
 | ID | Pri | Requisito |
 |----|-----|-----------|
 | BOOK-01 | M | Scegliere uno o **più** trattamenti in sequenza (es. colore + taglio + piega) |
-| BOOK-02 | M | Scegliere l'operatore, oppure "nessuna preferenza" (il sistema bilancia il carico) |
+| BOOK-02 | M | Il cliente **non** sceglie l'operatore: sceglie sede e servizi, e il sistema assegna l'operatore bilanciando il carico (Q21). Lo staff, dal pannello, può assegnarlo a mano |
 | BOOK-03 | M | Vedere **solo** gli orari realmente disponibili, calcolati da durate, tempi di posa, buffer, orari, ferie, prenotazioni esistenti e risorse |
 | BOOK-04 | M | **Mutua esclusione garantita**: due clienti non possono **mai** ottenere la stessa risorsa nello stesso intervallo, nemmeno con richieste simultanee. In caso di conflitto il secondo riceve un messaggio chiaro e orari alternativi |
 | BOOK-05 | M | Durante la compilazione lo slot resta **riservato** per un tempo breve (hold, default 10 min) |
 | BOOK-06 | M | Dati richiesti: nome, cognome, email e/o telefono, consenso privacy. Note facoltative (con l'avviso di non inserire dati sanitari) |
-| BOOK-07 | M | Verifica del contatto con OTP per i nuovi clienti (configurabile: email, SMS o nessuna) |
+| BOOK-07 | M | Verifica dell'**email con OTP** a ogni prenotazione fatta senza login; nell'app basta il login (OTP email una tantum) (Q17) |
 | BOOK-08 | M | Email di conferma con file `.ics`, riepilogo, prezzo indicativo e **link di gestione** sicuro |
-| BOOK-09 | M | Disdetta e spostamento self-service dal link o dall'app, entro la finestra della policy (default 24 h) |
-| BOOK-10 | M | Promemoria automatici (default 24 h e 2 h prima), su canali configurabili |
+| BOOK-09 | M | Disdetta e spostamento self-service dal link o dall'app **fino a 4 giorni prima** (Q16). Dopo, il sistema mostra telefono e WhatsApp del salone |
+| BOOK-10 | M | Promemoria **push** (app) 24 h e 2 h prima (Q19). Se il cliente non ha l'app: **email** 24 h prima |
 | BOOK-11 | M | Prezzi mostrati IVA inclusa, con "a partire da" quando il prezzo dipende dalla lunghezza dei capelli |
 | BOOK-12 | S | Account cliente (login con OTP/magic link) con storico e "riprenota lo stesso" |
 | BOOK-13 | S | Lista d'attesa per una data piena: alla prima disdetta si avvisa il primo in lista, con un hold dedicato |
@@ -61,8 +61,9 @@ Ogni requisito ha un ID stabile che si richiama nei ticket, nei test e nei commi
 | BOOK-15 | C | Caparra o pagamento anticipato (Stripe) per servizi lunghi o clienti con no-show passati |
 | BOOK-16 | C | Appuntamenti ricorrenti (es. ritocco radici ogni 4 settimane) |
 | BOOK-17 | W | Prenotazioni di gruppo (es. sposa + damigelle): in v1 si gestiscono a mano dal pannello |
-| BOOK-18 | S | Prenotare **per un'altra persona** (figlio, genitore) con lo stesso contatto: un account o contatto può gestire più profili cliente |
+| BOOK-18 | W | ~~Prenotare per un'altra persona~~: escluso (Q39), si prenota solo per sé |
 | BOOK-19 | M | Link ai termini di prenotazione (disdetta, ritardo, no-show) mostrato prima della conferma |
+| BOOK-20 | M | Se ci sono più sedi attive, il **primo passo** è la scelta della sede (Firenze / Malta / …); con una sola sede il passo non compare |
 
 ### Pannello di gestione (ADMIN)
 
@@ -87,8 +88,8 @@ Ogni requisito ha un ID stabile che si richiama nei ticket, nei test e nei commi
 | ADMIN-17 | S | Gestione dei client MCP autorizzati: elenco, revoca, kill switch globale |
 | ADMIN-18 | S | Funziona bene su **telefono e tablet** (PWA installabile): Arturo lavorerà soprattutto da lì |
 | ADMIN-19 | C | Stampa agenda del giorno |
-| ADMIN-20 | C | Gestione multi-sede (Malta) dallo stesso pannello |
-| ADMIN-21 | M | **Galleria lavori:** upload delle foto (con rimozione dei metadati EXIF/GPS), categoria, prima/dopo, collegamento alla **liberatoria** del cliente; il sito le mostra senza bisogno di uno sviluppatore |
+| ADMIN-20 | M | Gestione **multi-sede** (fino a 10 negozi) dallo stesso pannello, con selettore di sede e ruoli per sede (Q28) |
+| ADMIN-21 | W | ~~Galleria nel pannello~~: testi e galleria li gestiamo **noi** nel repo (Q40). Le foto passano comunque da rimozione EXIF/GPS e liberatoria |
 | ADMIN-22 | S | **Giornata straordinaria:** "Arturo è malato" → seleziona giorno/operatore → sposta o annulla in blocco con un messaggio personalizzato a tutti i clienti coinvolti |
 | ADMIN-23 | S | Notifiche ad Arturo via **Web Push** dalla PWA (iOS ≥ 16.4 se installata nella home), in attesa della modalità staff dell'app |
 
@@ -118,6 +119,7 @@ Ogni requisito ha un ID stabile che si richiama nei ticket, nei test e nei commi
 | MCP-05 | M | Nessun tool generico (niente SQL, shell o HTTP arbitrario) |
 | MCP-06 | S | Prompt predefiniti: "briefing di oggi", "riempi i buchi della settimana" |
 | MCP-07 | C | MCP pubblico per i clienti (disponibilità + richiesta di prenotazione tramite assistenti AI) |
+| MCP-08 | M | **Pseudonimizzazione** dei clienti nell'output dei tool ("Maria R.", niente contatti), attiva di default: Arturo userà un piano AI **consumer** (Q42) |
 
 ### Notifiche (NOTIF)
 
@@ -125,7 +127,7 @@ Ogni requisito ha un ID stabile che si richiama nei ticket, nei test e nei commi
 |----|-----|-----------|
 | NOTIF-01 | M | Email transazionali (conferma, modifica, disdetta, promemoria, OTP) |
 | NOTIF-02 | M | Push (app) |
-| NOTIF-03 | S | SMS o WhatsApp per promemoria e OTP, con limiti anti-frode (vedi [12](12-sicurezza.md), *SMS pumping*) |
+| NOTIF-03 | W | ~~SMS/WhatsApp automatici~~: esclusi (push + email bastano; WhatsApp resta manuale con l'app Business). Se un giorno servissero: limiti anti-frode di [12](12-sicurezza.md) |
 | NOTIF-04 | M | Ogni messaggio ha lingua, mittente verificato (SPF/DKIM/DMARC) e una registrazione dell'esito |
 | NOTIF-05 | M | Notifica ad Arturo per ogni nuova prenotazione o disdetta (push e/o email, configurabile) |
 
@@ -148,4 +150,5 @@ Ogni requisito ha un ID stabile che si richiama nei ticket, nei test e nei commi
 | NFR-11 | Osservabilità | Log strutturati senza PII, metriche RED sugli endpoint, alert su errori, backup falliti, coda notifiche e scadenza certificati |
 | NFR-12 | Manutenibilità | TypeScript strict, copertura ≥ 90 % (rami) sul motore prenotazioni, test di proprietà sull'algoritmo degli slot |
 | NFR-13 | Portabilità | Tutta l'infrastruttura ricostruibile da zero su una nuova VPS in < 2 h, partendo dalla repo e dai backup |
-| NFR-14 | Costi | Costo ricorrente sotto una soglia concordata con il cliente (vedi [20](20-costi.md)) ❓ |
+| NFR-14 | Costi | Costi vivi ricorrenti compatibili con il canone di **40 €/mese** (vedi [20](20-costi.md)) |
+| NFR-15 | Scalabilità | Fino a **10 sedi** per organizzazione senza modifiche al codice; isolamento tra organizzazioni garantito anche dal DB (RLS, [ADR-0009](adr/0009-multi-tenancy.md)) |

@@ -7,7 +7,8 @@
 3. **Come è fatto:** [04 Architettura](04-architettura.md) → [05 Modello dati](05-modello-dati.md) → [06 Motore prenotazioni](06-motore-prenotazioni.md) → [07 API](07-api.md)
 4. **Prodotti:** [08 Sito](08-sito-vetrina.md) · [09 Pannello](09-pannello-gestione.md) · [10 App](10-app-mobile.md) · [11 MCP](11-mcp-agenti.md)
 5. **In produzione:** [12 Sicurezza](12-sicurezza.md) · [13 VPS](13-infrastruttura-vps.md) · [14 Privacy e legale](14-privacy-e-legale.md)
-6. **Pianificazione:** [16 Roadmap](16-roadmap.md) · [18 Rischi](18-rischi.md) · [20 Costi](20-costi.md)
+6. **Pianificazione:** [16 Roadmap](16-roadmap.md) · [18 Rischi](18-rischi.md) · [20 Costi](20-costi.md) · [21 Dati mock](21-dati-mock.md)
+8. **Brand:** [../brand/](../brand/README.md) (logo vettoriale, palette, token, font, foto)
 7. **Riferimenti:** [19 Open source](19-riferimenti-open-source.md) · [Glossario](glossario.md) · [ADR](adr/README.md) · [Ricerche e verifiche](research/)
 
 ## Convenzioni

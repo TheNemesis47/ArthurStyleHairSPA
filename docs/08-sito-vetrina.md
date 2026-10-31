@@ -1,6 +1,6 @@
 # 08 — Sito vetrina
 
-Stato: `bozza` · App: `apps/web` (Next.js) · Skill: `frontend-design`, `gsap-*`, `r3f-best-practices`, `/webperf`, `web-design-guidelines`
+Stato: `in revisione` (aggiornato 31/10/2026) · Brand: [brand/](../brand/README.md) · App: `apps/web` (Next.js) · Skill: `frontend-design`, `gsap-*`, `r3f-best-practices`, `/webperf`, `web-design-guidelines`
 
 ## 1. Obiettivi
 
@@ -19,7 +19,7 @@ Stato: `bozza` · App: `apps/web` (Next.js) · Skill: `frontend-design`, `gsap-*
 | `/lavori` · `/en/work` | Galleria prima/dopo con filtri | Solo foto **con liberatoria** |
 | `/prenota` · `/en/book` | Flusso di prenotazione (wizard) | Senza 3D e animazioni pesanti: qui conta la velocità |
 | `/prenotazione/[token]` · `/en/booking/[token]` | Gestione: disdici, sposta, .ics | `noindex`, `Referrer-Policy: no-referrer` |
-| `/contatti` · `/en/contact` | Indirizzo **19R**, mappa con consenso, orari, telefono, WhatsApp | |
+| `/contatti` · `/en/contact` | Per sede: indirizzo (❓ Q44), mappa con consenso, orari, tel. +39 353 491 8255, pulsante WhatsApp (`https://wa.me/393317545064`) | Con più sedi: una pagina per sede (`/sedi/firenze`, `/sedi/malta`) |
 | `/malta` · `/en/malta` | "Coming soon to Malta" + lista d'attesa | Pubblicazione decisa con il cliente ❓ |
 | `/privacy`, `/cookie`, `/note-legali`, `/termini-prenotazione` | Pagine legali IT/EN | P.IVA in **footer** di ogni pagina |
 | `/account` | Le mie prenotazioni (login con OTP) | `noindex` |
@@ -28,7 +28,9 @@ Stato: `bozza` · App: `apps/web` (Next.js) · Skill: `frontend-design`, `gsap-*
 
 > Prima i materiali Instagram in `brand/`, poi la direzione. Le proposte qui sotto sono **ipotesi** di partenza.
 
-**Concept proposto: "Il gesto".** 20 anni di mani esperte, raccontati con il movimento.
+**Concept proposto: "Il gesto".** 20 anni di mani esperte, raccontati con il movimento. Il segno grafico è già nel
+logo: le **ciocche** (linee sottili a ventaglio, [brand/](../brand/README.md)). L'hero 3D le fa muovere: è la stessa
+linea del logo che prende vita. Palette Carta, Inchiostro, Espresso, Castano; tipografia Jost, con lo script solo nel logo.
 
 | Momento | Effetto | Tecnica |
 |---------|---------|---------|
@@ -72,8 +74,9 @@ trattato con shader. **La scelta si fa dopo un prototipo provato su un telefono 
 
 ## 5. Flusso di prenotazione (UX)
 
+0. **Sede** (solo se ce n'è più di una attiva): Firenze / Malta.
 1. **Servizi:** lista per categoria, multi-selezione, totale aggiornato ("da 65 €", durata ~1 h 50').
-2. **Operatore:** "Nessuna preferenza" in evidenza + foto degli operatori.
+2. *(nessuna scelta dell'operatore: lo assegna il sistema, Q21)*
 3. **Data e ora:** calendario a 14 giorni; giorni pieni disattivati, con link "avvisami se si libera" (BOOK-13).
 4. **Hold:** al tocco sull'orario parte l'hold, con conto alla rovescia discreto ("Ti teniamo l'orario per 10 minuti").
 5. **Dati:** nome, cognome, email/telefono (`autocomplete` corretti, `inputmode`), note. Consenso privacy (informativa) e
@@ -103,7 +106,7 @@ tastiera e da screen reader, non solo una griglia visuale.
 
 ## 6. SEO locale
 
-- **Dati strutturati JSON-LD:** `HairSalon` (sottotipo di `LocalBusiness`) con `address` (**"Via Sant'Egidio 19R"**), `geo`,
+- **Dati strutturati JSON-LD:** `HairSalon` (sottotipo di `LocalBusiness`) con `address` (indirizzo **identico** a Google, vedi Q44), `geo`,
   `openingHoursSpecification`, `telephone`, `priceRange`, `sameAs` (Instagram, Google), `hasOfferCatalog` con i servizi.
   `BreadcrumbList`, `Person` per Arturo.
 - **Metadata** per pagina, `hreflang` it/en + `x-default`, canonical, `sitemap.xml` generata, `robots.txt`
@@ -112,7 +115,10 @@ tastiera e da screen reader, non solo una griglia visuale.
   Business Connect**, **Bing Places**. Link "Prenota" del profilo Google → `/prenota?utm_source=google&utm_medium=gbp`.
   Il pulsante integrato "Prenota con Google" (*Reserve with Google*) è riservato a piattaforme partner approvate: per noi
   vale il link al sito.
-- **Recensioni:** richiesta automatica dopo l'appuntamento (BOOK-14). È la leva principale della SEO locale, soprattutto per partire forti a Malta.
+- **Recensioni:** la scheda ha già **4,7★ su 140 recensioni**: vanno valorizzate sul sito (con attribuzione) e fatte crescere
+  con la richiesta automatica dopo l'appuntamento (BOOK-14).
+- **Treatwell** (Q43): oggi il pulsante "Prenota online" di Google potrebbe puntare a Treatwell. Al go-live va puntato
+  su `/prenota` e la prenotazione Treatwell va chiusa o coordinata: due agende = doppie prenotazioni.
 - **Malta:** quando la sede esiste, una pagina dedicata con il proprio `HairSalon` e il proprio profilo Google. Le
   recensioni non si trasferiscono tra profili: per questo il **sito** e Instagram sono gli asset che "viaggiano".
 - **Contenuti:** testi originali (non generati in massa), FAQ vere ("Quanto dura un balayage?"), alt text descrittivi.
