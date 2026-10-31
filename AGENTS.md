@@ -8,27 +8,32 @@ Piattaforma digitale di **Arthur Style** (salone di parrucchiere a Firenze, in f
 GSAP/Three.js, prenotazione online con mutua esclusione garantita dal database, pannello di gestione, app iOS/Android
 (Expo), API unica, server MCP per agenti. Contesto completo: [README.md](README.md) e [docs/](docs/README.md).
 
-**Stato:** progettazione. Prima di scrivere codice si leggono [CONSTRAINTS.md](CONSTRAINTS.md), il documento della fase
+**Stato:** sviluppo iniziato (F0 + F1). Esistono `packages/core` (motore di disponibilità) e `packages/db` (migrazioni,
+lock, creazione hold). Prima di scrivere codice si leggono [CONSTRAINTS.md](CONSTRAINTS.md), il documento della fase
 corrente in [docs/16-roadmap.md](docs/16-roadmap.md) e gli ADR in [docs/adr/](docs/adr/README.md).
 
 ## Struttura (prevista, vedi [docs/04](docs/04-architettura.md) §3)
 
 `apps/{web,admin,api,worker,mcp,mobile}` · `packages/{core,db,contracts,i18n,notifications,ui,config,testing}` · `infra/` · `docs/` · `brand/`
 
+Oggi esistono: `packages/core`, `packages/db`, `.github/workflows/` (CI, CodeQL), `brand/`, `docs/`.
+
 ## Comandi
 
-> Da compilare durante lo scaffolding (F0.6). Valori previsti:
+Requisiti: Node ≥ 22.12 (CI e produzione: 24, vedi `.nvmrc`), pnpm 10.28 (`packageManager`).
 
 ```bash
-pnpm install          # rispetta minimumReleaseAge e allowlist dei build script
-pnpm dev              # tutte le app in sviluppo (Turborepo)
-pnpm lint             # ESLint + regole di sicurezza custom
-pnpm typecheck
-pnpm test             # unit + proprietà
-pnpm test:integration # richiede Docker (Testcontainers, Postgres 18)
-pnpm test:e2e         # Playwright
-pnpm db:migrate       # migrazioni (ruolo app_owner)
+pnpm install                 # rispetta minimumReleaseAge (3 giorni) e l'allowlist dei build script
+pnpm lint                    # ESLint + regole di sicurezza (sql.raw, dangerouslySetInnerHTML, Date nel dominio, .only/.skip)
+pnpm typecheck               # tsc strict su tutti i pacchetti
+pnpm test                    # unit + proprietà (+ copertura con soglia 95% sul motore)
+pnpm format:check            # Prettier
+DATABASE_URL=postgresql://postgres@127.0.0.1:5432/postgres pnpm test:integration
+                             # PostgreSQL di TEST (crea e distrugge un DB usa e getta; mai produzione)
+DATABASE_URL=… pnpm --filter @arthur/db db:migrate   # migrazioni (ruolo app_owner)
 ```
+
+Da aggiungere quando esisteranno le app: `pnpm dev`, `pnpm test:e2e` (Playwright).
 
 ## Regole non negoziabili 🔒
 

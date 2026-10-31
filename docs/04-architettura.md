@@ -66,7 +66,11 @@ flowchart TB
 | MCP | **`@modelcontextprotocol/sdk`** (TypeScript) | SDK ufficiale | — |
 | Infrastruttura | Docker Compose + **Caddy** + Cloudflare + Ansible | Semplice, riproducibile, HTTPS automatico | Kubernetes: sproporzionato |
 
-> ⚠️ **Versioni:** al momento dello scaffolding si usa l'ultima stabile di ogni pacchetto, **fissata** nel lockfile.
+> ⚠️ **Versioni (scaffolding del 31/10/2026):** TypeScript **6.0.3**, fissato: la 7.0 (compilatore nativo) esiste già, ma
+> typescript-eslint supporta solo `<6.1`; si aggiorna quando il linter la supporta. Vitest 4, ESLint 10, Turborepo 2,
+> pnpm 10.28. Node: 24 in CI e in produzione, ≥ 22.12 ammesso in locale.
+>
+> Regola generale: si usa l'ultima stabile di ogni pacchetto, **fissata** nel lockfile.
 > Le skill `source-driven-development` ed `expo-upgrade` servono a verificare le API sulla documentazione ufficiale della versione installata.
 
 ## 3. Struttura del monorepo (prevista)

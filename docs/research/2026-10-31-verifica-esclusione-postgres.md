@@ -67,3 +67,17 @@ aggiornato è stato ricaricato su PostgreSQL 16 e verificato con un ruolo `app_a
 | `EXCLUDE` con RLS attiva | ✅ sovrapposizione rifiutata |
 | Organizzazione B vede le allocazioni di A | ✅ no (0 righe) |
 | Regressione: sovrapposizione, annullamento → trigger, hold → expired | ✅ |
+
+## Terza verifica — test di integrazione automatici (31/10/2026)
+
+Gli script manuali sono diventati test automatici (`packages/db/test-integration`, eseguiti in CI su PostgreSQL 18):
+
+- slot calcolato dal motore → `createHold` → booking, righe e allocazioni coerenti;
+- **200 richieste concorrenti** sullo stesso slot con il ruolo `app_api` (RLS attiva) → 1 successo, 199 `slot-taken`,
+  **0 deadlock** nel log del server, < 5 s;
+- macchina a stati (held → completed rifiutata), `expire_holds()` libera le risorse, idempotenza.
+
+**Scoperta:** con un *pool* di connessioni, dopo il primo `set_config('app.org_id', …, true)` la variabile resta
+**definita ma vuota** nelle transazioni successive della stessa connessione: non si ottiene più l'errore
+"unrecognized configuration parameter" visto con `psql`. La query falliva comunque (cast di `''` a uuid), ma per un
+motivo fragile. `app_org()` ora controlla esplicitamente valore nullo o vuoto e solleva un errore chiaro ([docs/05 §4-bis](../05-modello-dati.md)).

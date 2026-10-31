@@ -39,6 +39,20 @@ gantt
 > Il go-live delle prenotazioni (fine F4) cade a metà gennaio: dopo le feste e vicino al trasferimento. Va deciso con
 > Arturo **quale sede attivare** in quel momento (Q27, Q28).
 
+### Avanzamento (aggiornato il 31/10/2026)
+
+| Task | Stato | Dove |
+|------|-------|------|
+| F0.5 Brand | ✅ | `brand/` |
+| F0.6 Scaffolding monorepo | ✅ pnpm + Turborepo + TS strict + ESLint di sicurezza + Prettier | radice |
+| F0.7 CI | ✅ lint, typecheck, test, integrazione su PostgreSQL 18, gitleaks, CodeQL, Renovate (attivarlo su GitHub) | `.github/workflows/` |
+| F1.1 Schema + migrazioni | ✅ migrazioni 0000–0003 (schema, macchina a stati, scadenza hold, permessi) | `packages/db/migrations` |
+| F1.2 IntervalSet + template | ✅ copertura 100 %, test di proprietà | `packages/core` |
+| F1.3 `computeAvailability` | ✅ 41 test (casi E2–E17, ora legale, proprietà), mutanti uccisi | `packages/core` |
+| F1.4 Hold → conferma | 🟡 **hold fatto** (lock advisory, 200 richieste concorrenti → 1 successo); conferma, spostamento e annullamento da fare | `packages/db/src/holds.ts` |
+| F1.5 Auth | ⏳ | — |
+| F1.6 API | ⏳ | — |
+
 **Milestone:**
 
 | Milestone | Contenuto | Uscita stimata |
