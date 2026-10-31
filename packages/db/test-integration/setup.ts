@@ -24,6 +24,8 @@ export async function createTestDb(): Promise<TestDb> {
 
   const dbUrl = withDatabase(url, name);
   const admin = new pg.Pool({ connectionString: dbUrl, max: 4 });
+  // Un pool pg emette 'error' se il server chiude una connessione inattiva: va SEMPRE gestito (anche nell'API, con log)
+  admin.on('error', () => undefined);
   const c = await admin.connect();
   try {
     const v = await c.query<{ v: string }>("SELECT current_setting('server_version_num') AS v");
@@ -39,6 +41,7 @@ export async function createTestDb(): Promise<TestDb> {
   appUrl.username = 'app_api';
   appUrl.password = 'app_api_test';
   const app = new pg.Pool({ connectionString: appUrl.toString(), max: 50 });
+  app.on('error', () => undefined);
   return {
     admin,
     app,

@@ -49,7 +49,7 @@ gantt
 | F1.1 Schema + migrazioni | ✅ migrazioni 0000–0003 (schema, macchina a stati, scadenza hold, permessi) | `packages/db/migrations` |
 | F1.2 IntervalSet + template | ✅ copertura 100 %, test di proprietà | `packages/core` |
 | F1.3 `computeAvailability` | ✅ 41 test (casi E2–E17, ora legale, proprietà), mutanti uccisi | `packages/core` |
-| F1.4 Hold → conferma | 🟡 **hold fatto** (lock advisory, 200 richieste concorrenti → 1 successo); conferma, spostamento e annullamento da fare | `packages/db/src/holds.ts` |
+| F1.4 Hold → conferma, disdetta, spostamento | ✅ hold (200 richieste concorrenti → 1 successo, 0 deadlock), conferma (sessione, scadenza, email verificata, limite prenotazioni, cliente sovrapposto, token hashato), disdetta (4 giorni per il cliente, riprotezione degli incastri forzati), spostamento atomico. 16 test di integrazione | `packages/db/src/{holds,bookings}.ts` |
 | F1.5 Auth | ⏳ | — |
 | F1.6 API | ⏳ | — |
 

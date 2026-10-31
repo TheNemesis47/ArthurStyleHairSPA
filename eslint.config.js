@@ -66,7 +66,7 @@ export default tseslint.config(
   },
   {
     // nei test le asserzioni non-null sono accettabili: un undefined fa fallire il test, che è ciò che vogliamo
-    files: ['**/test/**/*.ts', '**/*.test.ts'],
+    files: ['**/test/**/*.ts', '**/test-integration/**/*.ts', '**/*.test.ts'],
     rules: { '@typescript-eslint/no-non-null-assertion': 'off' },
   },
   {
