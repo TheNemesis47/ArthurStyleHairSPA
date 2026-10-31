@@ -1,0 +1,5 @@
+docs/
+brand/
+.claude/
+*.md
+pnpm-lock.yaml

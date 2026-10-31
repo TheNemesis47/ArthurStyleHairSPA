@@ -1,0 +1,9 @@
+packages:
+  - 'apps/*'
+  - 'packages/*'
+
+# Difesa supply chain (docs/12 §4, CONSTRAINTS S-08)
+# Una versione appena pubblicata non si installa prima di 3 giorni (4320 minuti).
+minimumReleaseAge: 4320
+# Nessuno script di build delle dipendenze viene eseguito, salvo quelli elencati qui (dopo revisione).
+onlyBuiltDependencies: []
