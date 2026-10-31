@@ -1,6 +1,6 @@
 # 03 — Skill e workflow per gli agenti di coding
 
-Stato: `in revisione` · Verifica fonti: 31/10/2026 (manifest `.claude-plugin/marketplace.json` letti direttamente dai repository GitHub)
+Stato: `approvato` (skill installate) · Verifica fonti e revisione: 31/10/2026 (manifest `.claude-plugin/marketplace.json` letti direttamente dai repository GitHub)
 
 L'obiettivo è usare **tante skill, ma ognuna al momento giusto**. Le skill sono istruzioni che l'agente esegue con i
 tuoi permessi. Quindi:
@@ -24,71 +24,55 @@ tuoi permessi. Quindi:
 | [`greensock/gsap-skills`](https://github.com/greensock/gsap-skills) | GreenSock (ufficiale) | MIT (GSAP è gratuito, plugin inclusi) | Animazioni, ScrollTrigger, SplitText, Flip, `useGSAP`, performance |
 | [`emalorenzo/three-agent-skills`](https://github.com/emalorenzo/three-agent-skills) | community | MIT | Three.js e React Three Fiber: memoria, render loop, shader, asset ⚠️ community, va revisionata |
 | [`expo/skills`](https://github.com/expo/skills) | Expo (ufficiale) | MIT (skill EAS = servizi a pagamento) | App iOS/Android, Expo Router, UI nativa, build e pubblicazione sugli store |
-| [`supabase/agent-skills`](https://github.com/supabase/agent-skills) → `postgres-best-practices` | Supabase (ufficiale) | — | Regole PostgreSQL (indici, query, schema) valide per **qualsiasi** Postgres, non solo Supabase |
-| [`trailofbits/skills`](https://github.com/trailofbits/skills) | Trail of Bits | — | Sicurezza seria: Semgrep/CodeQL, default insicuri, review differenziale, supply chain, property-based testing |
+| [`supabase/agent-skills`](https://github.com/supabase/agent-skills) → `postgres-best-practices` | Supabase (ufficiale) | MIT | Regole PostgreSQL (indici, query, schema) valide per **qualsiasi** Postgres, non solo Supabase |
+| [`trailofbits/skills`](https://github.com/trailofbits/skills) | Trail of Bits | CC-BY-SA-4.0 | Sicurezza seria: Semgrep/CodeQL, default insicuri, review differenziale, supply chain, property-based testing |
 | [`anthropics/skills`](https://github.com/anthropics/skills) | Anthropic | Apache-2.0 | `frontend-design` (niente estetica "generata dall'AI"), `mcp-builder`, `webapp-testing` (Playwright) |
-| [`vercel-labs/agent-skills`](https://github.com/vercel-labs/agent-skills) | Vercel | — | `react-best-practices`, `web-design-guidelines` (audit a11y/UX con riferimenti file:riga) |
+| [`vercel-labs/agent-skills`](https://github.com/vercel-labs/agent-skills) | Vercel | MIT | `vercel-react-best-practices`, `web-design-guidelines` (audit a11y/UX con riferimenti file:riga) |
 
 Skill **già disponibili** in Claude Code, senza installazione: `/security-review`, `/code-review`, `/simplify`, `claude-api`.
 
-## 2. Installazione (Claude Code)
+## 2. Installazione — ✅ fatta il 31/10/2026
 
-I marketplace sono già dichiarati in [`.claude/settings.json`](../.claude/settings.json) (`extraKnownMarketplaces`).
-I plugin **non** sono abilitati automaticamente (Regola 1): li abiliti tu dopo la revisione.
+Revisione eseguita prima dell'installazione (Regola 1), sui repository clonati:
 
-```text
-# Engineering (Addy Osmani)
-/plugin install agent-skills@addy-agent-skills
+- **Hook:** nessun plugin installato registra hook automatici. Quelli di Addy Osmani (`hooks/`: cache di `WebFetch`
+  per `source-driven-development`, protezione dei blocchi per `/code-simplify`) sono **opt-in** e non sono attivati.
+  I plugin di Trail of Bits con hook (`gh-cli`, `modern-python`, `fp-check`) **non** sono stati installati.
+- **Server MCP:** solo il plugin Expo ne aggiunge uno, quello ufficiale remoto `https://mcp.expo.dev/mcp`. Chiede il login Expo solo quando lo si usa.
+- **Script:** gli script inclusi (Matt Pocock, GSAP, Trail of Bits, Anthropic) si eseguono solo se la skill lo chiede
+  durante l'uso. Una scansione dei pattern pericolosi (pipe verso shell, lettura di credenziali, reverse shell, payload base64) non ha dato risultati.
+- **Licenze:** MIT (Addy, Matt, GSAP, Expo, Supabase, Vercel, three-agent-skills), Apache-2.0 (Anthropic), CC-BY-SA-4.0 (Trail of Bits). Sono compatibili con l'uso nel progetto.
 
-# Engineering + produttività (Matt Pocock)
-/plugin install mattpocock-skills@mattpocock
-# poi, una volta per repo:
-/setup-matt-pocock-skills      → issue tracker: GitHub · documenti: docs/ · etichette: vedi §5
+### Plugin (scope **progetto**, in [`.claude/settings.json`](../.claude/settings.json) → `enabledPlugins`)
 
-# GSAP (ufficiale)
-/plugin install gsap-skills@gsap-skills
+| Plugin | Versione | Contenuto |
+|--------|----------|-----------|
+| `agent-skills@addy-agent-skills` | 0.6.15 | 25 skill + comandi `/spec`, `/plan`, `/build`, `/test`, `/constraints`, `/agent-skills:review`, `/webperf`, `/code-simplify`, `/ship` |
+| `mattpocock-skills@mattpocock` | 1.3.2 | `grill-with-docs`, `to-questionnaire`, `to-tickets`, `tdd`, `prototype`, `wizard`, `handoff`… |
+| `gsap-skills@gsap-skills` | 1.0.0 | `gsap-core`, `gsap-timeline`, `gsap-scrolltrigger`, `gsap-plugins`, `gsap-utils`, `gsap-react`, `gsap-performance`, `gsap-frameworks` |
+| `expo@expo-plugins` | 1.14.3 | Skill `expo-*` ed `eas-*` + MCP Expo |
+| `postgres-best-practices@supabase-agent-skills` | — | Regole PostgreSQL |
+| Trail of Bits (10 plugin) | — | `static-analysis`, `semgrep-rule-creator`, `insecure-defaults`, `sharp-edges`, `differential-review`, `supply-chain-risk-auditor`, `property-based-testing`, `audit-context-building`, `agentic-actions-auditor`, `testing-handbook-skills` |
 
-# Expo (ufficiale)
-/plugin install expo@expo-plugins
-
-# PostgreSQL
-/plugin install postgres-best-practices@supabase-agent-skills
-
-# Sicurezza (Trail of Bits): installare SOLO questi
-/plugin install static-analysis@trailofbits
-/plugin install semgrep-rule-creator@trailofbits
-/plugin install insecure-defaults@trailofbits
-/plugin install sharp-edges@trailofbits
-/plugin install differential-review@trailofbits
-/plugin install supply-chain-risk-auditor@trailofbits
-/plugin install property-based-testing@trailofbits
-/plugin install audit-context-building@trailofbits
-/plugin install agentic-actions-auditor@trailofbits
-/plugin install testing-handbook-skills@trailofbits
-
-# Anthropic (contiene anche skill non pertinenti: usare solo quelle in tabella §3)
-/plugin install example-skills@anthropic-agent-skills
-```
-
-Skill senza marketplace Claude: si installano con la CLI `skills`, che le copia in `.claude/skills/` e le rende versionabili.
+Chi clona la repo e la apre con Claude Code riceve la proposta di installare questi plugin (dopo aver dato fiducia alla cartella).
+Comandi equivalenti, per reinstallare a mano:
 
 ```bash
-npx skills@latest add emalorenzo/three-agent-skills --skill r3f-best-practices -a claude-code
+claude plugin install agent-skills@addy-agent-skills --scope project
 ```
 
-```bash
-npx skills@latest add emalorenzo/three-agent-skills --skill three-best-practices -a claude-code
-```
+(stessa forma per gli altri ID in tabella). Aggiornamenti: `claude plugin marketplace update`, poi rileggere il changelog prima di confermare.
 
-```bash
-npx skills@latest add vercel-labs/agent-skills --skill react-best-practices -a claude-code
-```
+**Da fare una volta, nella prossima sessione** (le skill dei plugin si caricano all'avvio): `/setup-matt-pocock-skills`
+→ issue tracker: GitHub · documenti: `docs/` · etichette: vedi §5.
 
-```bash
-npx skills@latest add vercel-labs/agent-skills --skill web-design-guidelines -a claude-code
-```
+### Skill copiate nel repo (`.claude/skills/`, fissate a un commit)
 
-> Dopo `npx skills add` si fa il commit della cartella `.claude/skills/<nome>`: così la versione è fissata e revisionata in PR.
+`frontend-design`, `mcp-builder`, `webapp-testing` (Anthropic: solo queste tre, **non** l'intero `example-skills`, che
+include anche le linee guida del brand *di Anthropic* e potrebbe confondersi con il nostro), `vercel-react-best-practices`,
+`web-design-guidelines` (Vercel), `r3f-best-practices`, `three-best-practices` (community).
+Origine, commit e licenze: [`.claude/skills/SOURCES.md`](../.claude/skills/SOURCES.md). Per aggiornarle si scarica di
+nuovo dalla fonte e si rivede il diff in PR.
 
 ## 3. Catalogo: quali skill usiamo, e per cosa
 
@@ -122,7 +106,7 @@ npx skills@latest add vercel-labs/agent-skills --skill web-design-guidelines -a 
 | Architettura | `codebase-design` (moduli profondi, interfacce piccole), `api-and-interface-design` | Matt, Addy |
 | Documentazione ufficiale | `source-driven-development`: ogni scelta di framework si basa sulla doc ufficiale, citata | Addy |
 | Database | `postgres-best-practices` | Supabase |
-| Frontend / design | `frontend-design`, `frontend-ui-engineering`, `react-best-practices` | Anthropic, Addy, Vercel |
+| Frontend / design | `frontend-design`, `frontend-ui-engineering`, `vercel-react-best-practices` | Anthropic, Addy, Vercel |
 | Animazioni | `gsap-core`, `gsap-timeline`, `gsap-scrolltrigger`, `gsap-plugins` (SplitText, Flip, Draggable), `gsap-utils`, `gsap-react`, `gsap-performance` | GSAP |
 | 3D | `r3f-best-practices`, `three-best-practices` | community |
 | Mobile | `expo-overview`, `expo-project-structure`, `expo-router`, `expo-native-ui`, `expo-design-system`, `expo-animation`, `expo-ui`, `expo-data-fetching`, `expo-dev-client`, `expo-upgrade` | Expo |
@@ -181,7 +165,7 @@ Skill **predefinita** in grassetto, alternative tra parentesi.
 |------------------------------------|----------|-----------|------------|-------------|
 | F0 Fondamenta | **`grill-with-docs`**, `to-questionnaire`, `/constraints` | `ci-cd-and-automation`, `wizard` | — | `insecure-defaults` |
 | F1 Motore prenotazioni | **`/spec`**, `domain-modeling` | **`tdd`**, `postgres-best-practices`, `codebase-design` | **`property-based-testing`** | `doubt-driven-development`, `/security-review` |
-| F2 Pannello | `/spec` | `tdd`, `frontend-ui-engineering`, `react-best-practices` | `webapp-testing`, `web-design-guidelines` | `/code-review` |
+| F2 Pannello | `/spec` | `tdd`, `frontend-ui-engineering`, `vercel-react-best-practices` | `webapp-testing`, `web-design-guidelines` | `/code-review` |
 | F3 Sito | `idea-refine`, `prototype` | **`frontend-design`**, `gsap-*`, `r3f-best-practices` | **`/webperf`**, `browser-testing-with-devtools` | `web-design-guidelines` |
 | F4 Go-live web | `/plan` | `observability-and-instrumentation` | `testing-handbook-skills` | **`audit-context-building`**, `static-analysis`, `/ship` |
 | F5 App | `/spec` | `expo-*` | `webapp-testing` (web), test su dispositivo | `/security-review` |

@@ -49,3 +49,6 @@ stryker-tmp/
 
 # Claude Code (impostazioni locali personali)
 .claude/settings.local.json
+# Cache degli hook opzionali di agent-skills (se attivati)
+.claude/sdd-cache/
+.claude/.simplify-ignore-cache/

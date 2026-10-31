@@ -4,9 +4,10 @@
 
 ## Specifico per Claude Code
 
-- **Plugin e skill:** i marketplace sono dichiarati in `.claude/settings.json`. Si abilitano i plugin **dopo averli letti**
-  (comandi in [docs/03 §2](docs/03-skill-e-workflow-agenti.md)). Dopo `mattpocock-skills`, esegui `/setup-matt-pocock-skills`
-  una volta (issue tracker: GitHub; documenti: `docs/`).
+- **Plugin e skill:** installati e revisionati il 31/10/2026 (plugin in `.claude/settings.json`, skill copiate in
+  `.claude/skills/` con origine e commit in `SOURCES.md`). Dettagli e matrice d'uso: [docs/03](docs/03-skill-e-workflow-agenti.md).
+  Un plugin nuovo o un aggiornamento si **legge prima** di abilitarlo (hook, MCP, script). Se `/setup-matt-pocock-skills`
+  non è ancora stato eseguito, eseguilo una volta (issue tracker: GitHub; documenti: `docs/`).
 - **Prima di ogni PR** che tocca auth, API, DB, MCP o infrastruttura: `/security-review` e `/code-review`.
 - **Lavori lunghi:** usa i task per tracciare i passi; a fine sessione usa `handoff` se un altro agente deve continuare.
 - **Fonti:** per framework e regole esterne (Expo, Next.js, Better Auth, spec MCP, store) verifica la documentazione
