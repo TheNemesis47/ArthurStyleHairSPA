@@ -48,6 +48,20 @@ garanzia di mutua esclusione **a livello di database** su tutte le risorse.
 | Backup | **pgBackRest** / WAL-G, **restic** | MIT / Apache-2.0 / BSD | [13](13-infrastruttura-vps.md) |
 | Sicurezza host | **CrowdSec** | MIT | IPS |
 
+## 2-bis. Librerie di componenti animati "per agenti" (da valutare caso per caso)
+
+Segnalate dal committente il 31/10/2026. Sono collezioni di componenti da copiare nel progetto (registry shadcn),
+alcune pensate per l'uso con agenti AI. Regola: si legge il codice, si verifica la licenza, si copia solo il componente che serve.
+
+| Collezione | Tecnologia | Licenza | Nota |
+|------------|-----------|---------|------|
+| React Bits (reactbits.dev) | React, alcune varianti GSAP / three.js | **MIT + Commons Clause** ⚠️ | Fuori dalla nostra allowlist: valutare con attenzione l'uso in un lavoro a pagamento. Pro a pagamento |
+| Magic UI | React + Motion | MIT | Non GSAP |
+| Aceternity UI | React + Motion | ⚠️ verificare | Non GSAP |
+| 21st.dev | Registry di componenti della community | variabile per componente | Ha strumenti per agenti; verificare ogni licenza |
+
+Per la vetrina F3a non ne abbiamo usato nessuno: l'elemento distintivo (le ciocche) nasce dal logo ed è fatto a mano.
+
 ## 3. Altre fonti utili
 
 - PostgreSQL: documentazione su *Range Types* ed *Exclusion Constraints*; articolo di Supabase "Simplifying Time-Based Queries with Range Columns".

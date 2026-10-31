@@ -56,3 +56,6 @@ stryker-tmp/
 # Python
 __pycache__/
 *.pyc
+
+# Next.js (generato da next typegen / next build)
+next-env.d.ts

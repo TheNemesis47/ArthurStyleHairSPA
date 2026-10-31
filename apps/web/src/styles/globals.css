@@ -1,0 +1,488 @@
+/* Arthur Style — token da brand/tokens.json e brand/palette.md (contrasti WCAG verificati) */
+:root {
+  --carta: #fbf8f1;
+  --inchiostro: #726459; /* 5,38:1 su carta */
+  --espresso: #2a201b; /* 14,99:1 su carta */
+  --castano: #563d30; /* 9,40:1 su carta */
+  --caramello: #a98f7d; /* solo decorativo */
+  --marmo: #e7e4df;
+  --font-ui: var(--font-jost), system-ui, sans-serif;
+  --measure: 38rem;
+  --wrap: 72rem;
+  --gutter: clamp(1.25rem, 4vw, 2.5rem);
+  color-scheme: light;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+body {
+  margin: 0;
+  background: var(--carta);
+  color: var(--espresso);
+  font-family: var(--font-ui);
+  font-size: 1.0625rem;
+  font-weight: 400;
+  line-height: 1.6;
+  font-feature-settings: 'kern', 'liga';
+  text-rendering: optimizeLegibility;
+}
+img,
+svg {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+a {
+  color: var(--castano);
+  text-underline-offset: 0.2em;
+  text-decoration-thickness: 1px;
+}
+a:hover {
+  text-decoration-thickness: 2px;
+}
+:focus-visible {
+  outline: 2px solid var(--castano);
+  outline-offset: 3px;
+  border-radius: 2px;
+}
+
+h1,
+h2,
+h3 {
+  font-weight: 320;
+  line-height: 1.12;
+  letter-spacing: -0.015em;
+  margin: 0 0 0.6em;
+  text-wrap: balance;
+}
+h1 {
+  font-size: clamp(2.3rem, 5.6vw, 4.6rem);
+}
+h2 {
+  font-size: clamp(1.7rem, 3.4vw, 2.6rem);
+}
+h3 {
+  font-size: 1.25rem;
+  font-weight: 450;
+  letter-spacing: 0;
+}
+p {
+  margin: 0 0 1em;
+  max-width: var(--measure);
+  text-wrap: pretty;
+}
+.lead {
+  font-size: clamp(1.125rem, 1.6vw, 1.3rem);
+  color: var(--espresso);
+  font-weight: 340;
+}
+.muted {
+  color: var(--inchiostro);
+}
+.small {
+  font-size: 0.9375rem;
+}
+
+.wrap {
+  width: min(var(--wrap), 100% - 2 * var(--gutter));
+  margin-inline: auto;
+}
+.section {
+  padding-block: clamp(3.5rem, 9vw, 7rem);
+}
+.section + .section {
+  border-top: 1px solid var(--marmo);
+}
+
+.skip {
+  position: absolute;
+  left: 1rem;
+  top: -4rem;
+  z-index: 10;
+  background: var(--espresso);
+  color: var(--carta);
+  padding: 0.6rem 1rem;
+  text-decoration: none;
+}
+.skip:focus {
+  top: 1rem;
+}
+
+/* ───────── Header ───────── */
+.site-header {
+  position: relative;
+  z-index: 2;
+}
+.site-header .wrap {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+  padding-block: 1.1rem;
+}
+.brand-link {
+  display: inline-flex;
+  flex-shrink: 0;
+}
+.brand-link img {
+  width: clamp(9.5rem, 18vw, 12rem);
+}
+.nav-list {
+  display: flex;
+  gap: clamp(1rem, 2.2vw, 2rem);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  align-items: center;
+}
+.nav-list a {
+  color: var(--espresso);
+  text-decoration: none;
+  font-weight: 420;
+  padding-block: 0.4rem;
+  border-bottom: 1px solid transparent;
+}
+.nav-list a:hover,
+.nav-list a[aria-current='page'] {
+  border-bottom-color: var(--castano);
+}
+.lang-switch {
+  font-size: 0.9375rem;
+  color: var(--inchiostro);
+}
+.menu {
+  position: relative;
+}
+.menu > summary {
+  list-style: none;
+  cursor: pointer;
+  padding: 0.5rem 0.9rem;
+  border: 1px solid var(--inchiostro);
+  border-radius: 2px;
+  font-weight: 420;
+}
+.menu > summary::-webkit-details-marker {
+  display: none;
+}
+.menu .nav-list {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 0.5rem);
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.6rem;
+  background: var(--carta);
+  border: 1px solid var(--marmo);
+  padding: 1rem 1.25rem;
+  min-width: 13rem;
+}
+/* Desktop: lista sempre visibile; mobile: menu a scomparsa (il contenuto di un <details> chiuso non è mostrabile via CSS) */
+.nav-desktop {
+  display: none;
+}
+@media (min-width: 52rem) {
+  .nav-desktop {
+    display: flex;
+  }
+  .nav-mobile {
+    display: none;
+  }
+}
+
+/* ───────── Pulsanti ───────── */
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.9rem 1.4rem;
+  align-items: center;
+  margin-top: 2rem;
+}
+.button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  min-height: 3rem;
+  padding: 0.75rem 1.4rem;
+  background: var(--espresso);
+  color: var(--carta);
+  text-decoration: none;
+  font-weight: 450;
+  border-radius: 2px;
+  border: 0;
+  font: inherit;
+  cursor: pointer;
+}
+.button:hover {
+  background: var(--castano);
+}
+.text-link {
+  font-weight: 450;
+}
+
+/* ───────── Hero con le ciocche ───────── */
+.hero {
+  position: relative;
+  overflow: hidden;
+  padding-block: clamp(3rem, 10vw, 8rem) clamp(4rem, 12vw, 9rem);
+}
+.hero .wrap {
+  position: relative;
+  z-index: 1;
+}
+.hero-text {
+  max-width: 44rem;
+}
+.eyebrow {
+  color: var(--inchiostro);
+  font-weight: 420;
+  margin-bottom: 1.2rem;
+}
+.strands {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  overflow: hidden;
+}
+.strands-sway,
+.strands-layer {
+  position: absolute;
+  inset: 0;
+}
+.strands svg {
+  width: 100%;
+  height: 100%;
+}
+.strands path {
+  fill: none;
+  stroke: var(--inchiostro);
+  stroke-width: 0.55;
+  vector-effect: non-scaling-stroke;
+}
+/* Apertura: un velo color carta con bordo morbido scorre verso destra (solo transform: composited) */
+.strands-veil {
+  position: absolute;
+  inset: 0 auto 0 -25%;
+  width: 125%;
+  background: linear-gradient(90deg, rgb(251 248 241 / 0) 0, var(--carta) 20%, var(--carta) 100%);
+  transform: translateX(100%);
+}
+@media (prefers-reduced-motion: no-preference) {
+  .strands-veil {
+    animation: strands-reveal 2.4s cubic-bezier(0.45, 0, 0.2, 1) 0.15s both;
+  }
+  .strands-layer {
+    will-change: transform;
+  }
+}
+@keyframes strands-reveal {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(100%);
+  }
+}
+@media (max-width: 40rem) {
+  .strands {
+    opacity: 0.75;
+  }
+}
+
+/* ───────── Listino ───────── */
+.price-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  max-width: 46rem;
+}
+.price-group + .price-group {
+  margin-top: 2.5rem;
+}
+.price-row {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  gap: 0.25rem 1.25rem;
+  align-items: baseline;
+  padding-block: 0.75rem;
+  border-bottom: 1px solid var(--marmo);
+}
+.price-row .name {
+  font-weight: 420;
+}
+.price-row .dur {
+  color: var(--inchiostro);
+  font-size: 0.9375rem;
+  font-variant-numeric: tabular-nums;
+}
+.price-row .price {
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  min-width: 6.5rem;
+}
+@media (max-width: 30rem) {
+  .price-row {
+    grid-template-columns: 1fr auto;
+  }
+  .price-row .dur {
+    grid-column: 1;
+    grid-row: 2;
+  }
+}
+
+/* ───────── Lavori ───────── */
+.gallery {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+  gap: clamp(1rem, 3vw, 2rem);
+  margin: 2rem 0 0;
+}
+.gallery figure {
+  margin: 0;
+}
+.gallery img {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 4 / 5;
+  object-fit: cover;
+  background: var(--marmo);
+}
+.gallery figcaption {
+  color: var(--inchiostro);
+  font-size: 0.9375rem;
+  margin-top: 0.6rem;
+  max-width: 30rem;
+}
+
+/* ───────── Contatti e orari ───────── */
+.facts {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+  gap: 2rem 3rem;
+  margin-top: 2.5rem;
+}
+.facts dt {
+  color: var(--inchiostro);
+  font-size: 0.9375rem;
+  margin-bottom: 0.25rem;
+}
+.facts dd {
+  margin: 0;
+  font-size: 1.125rem;
+}
+.hours {
+  border-collapse: collapse;
+  margin-top: 0.5rem;
+  font-variant-numeric: tabular-nums;
+}
+.hours th,
+.hours td {
+  text-align: left;
+  padding: 0.35rem 1.5rem 0.35rem 0;
+  font-weight: 400;
+}
+.hours th {
+  color: var(--espresso);
+}
+
+/* ───────── Firma ───────── */
+.signature {
+  width: min(14rem, 60%);
+  margin-top: 1.5rem;
+}
+
+/* ───────── Form ───────── */
+.form {
+  display: grid;
+  gap: 1.2rem;
+  max-width: 30rem;
+  margin-top: 2rem;
+}
+.field label {
+  display: block;
+  font-weight: 450;
+  margin-bottom: 0.35rem;
+}
+.field input[type='text'],
+.field input[type='email'] {
+  width: 100%;
+  min-height: 3rem;
+  padding: 0.6rem 0.8rem;
+  font: inherit;
+  color: var(--espresso);
+  background: #fff;
+  border: 1px solid var(--inchiostro);
+  border-radius: 2px;
+}
+.check {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.7rem;
+  align-items: start;
+}
+.check input {
+  width: 1.25rem;
+  height: 1.25rem;
+  margin-top: 0.2rem;
+  accent-color: var(--castano);
+}
+.error {
+  color: #9b2c2c;
+  font-size: 0.9375rem;
+  margin: 0.35rem 0 0;
+}
+.notice {
+  border-left: 3px solid var(--castano);
+  padding: 0.8rem 1rem;
+  background: var(--marmo);
+  max-width: 34rem;
+}
+
+/* ───────── Footer ───────── */
+.site-footer {
+  background: var(--espresso);
+  color: var(--carta);
+  padding-block: 3rem 2.5rem;
+  margin-top: 0;
+}
+.site-footer a {
+  color: var(--carta);
+}
+.site-footer .wrap {
+  display: grid;
+  gap: 2rem;
+  grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+  align-items: start;
+}
+.site-footer img {
+  width: 11rem;
+}
+.site-footer ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.4rem;
+}
+.site-footer p {
+  margin: 0 0 0.4rem;
+}
+
+.visually-hidden {
+  position: absolute !important;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}

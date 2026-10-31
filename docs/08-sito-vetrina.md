@@ -2,6 +2,20 @@
 
 Stato: `in revisione` (aggiornato 31/10/2026) · Brand: [brand/](../brand/README.md) · App: `apps/web` (Next.js) · Skill: `frontend-design`, `gsap-*`, `r3f-best-practices`, `/webperf`, `web-design-guidelines`
 
+## 0. Implementazione F3a (31/10/2026)
+
+Stato: **fatto** in `apps/web` — risultati in [research](research/2026-10-31-vetrina-lighthouse.md).
+
+- **i18n senza librerie:** un layout radice per lingua (`app/(it)` e `app/(en)/en`, ognuno con il proprio `<html lang>`), percorsi
+  localizzati in un'unica tabella (`src/i18n/routes.ts`), dizionari tipizzati (l'inglese ha per forza le stesse chiavi
+  dell'italiano). Niente middleware: tutte le pagine sono statiche. La 404 globale usa `global-not-found` (Next 16).
+  `next-intl` resta un'opzione se serviranno plurali complessi o la traduzione dei messaggi del server.
+- **Ciocche:** SVG reso dal server, apertura con un velo animato solo in `transform`, GSAP (ScrollTrigger + `quickTo`)
+  caricato a browser inattivo; tutto spento con `prefers-reduced-motion`. Il 3D (R3F) resta un prototipo da fare (F3.2).
+- **Jost** self-hosted in WOFF2 (33 KB, variabile 100–900, latino + latino esteso A per il maltese), via `next/font/local`.
+- **Listino** dal mock di docs/21 (un test verifica che coincidano). **Indirizzo** senza civico finché Q44 è aperta.
+- **JSON-LD `HairSalon`:** rinviato a quando l'indirizzo è confermato, per non pubblicare dati sbagliati.
+
 ## 1. Obiettivi
 
 1. **Colpire** nei primi 3 secondi: chi arriva da Instagram deve ritrovare lo stesso stile e qualcosa in più.

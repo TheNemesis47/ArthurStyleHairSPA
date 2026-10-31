@@ -1,6 +1,9 @@
 // ESLint flat config — regole non negoziabili di AGENTS.md applicate in modo automatico.
 import js from '@eslint/js';
 import tseslint from 'typescript-eslint';
+import nextPlugin from '@next/eslint-plugin-next';
+import jsxA11y from 'eslint-plugin-jsx-a11y';
+import reactHooks from 'eslint-plugin-react-hooks';
 
 /** Selettori vietati ovunque (sicurezza). */
 const securitySyntax = [
@@ -39,6 +42,10 @@ export default tseslint.config(
       '**/dist/**',
       '**/.turbo/**',
       '**/coverage/**',
+      '**/.next/**',
+      '**/next-env.d.ts',
+      '**/playwright-report/**',
+      '**/test-results/**',
       'brand/**',
       '.claude/**',
       'docs/**',
@@ -58,6 +65,19 @@ export default tseslint.config(
       '@typescript-eslint/no-explicit-any': 'error',
       '@typescript-eslint/consistent-type-imports': 'error',
       'no-restricted-syntax': ['error', ...securitySyntax],
+    },
+  },
+  {
+    // Sito (Next.js): regole Next core-web-vitals, accessibilità e hook di React
+    files: ['apps/web/**/*.{ts,tsx}'],
+    plugins: { '@next/next': nextPlugin, 'jsx-a11y': jsxA11y, 'react-hooks': reactHooks },
+    settings: { next: { rootDir: 'apps/web/' } },
+    rules: {
+      ...nextPlugin.configs['core-web-vitals'].rules,
+      ...jsxA11y.flatConfigs.strict.rules,
+      ...reactHooks.configs.recommended.rules,
+      // <img> solo per SVG statici del brand (non ottimizzabili da next/image); le foto usano next/image
+      '@next/next/no-img-element': 'off',
     },
   },
   {

@@ -16,7 +16,7 @@ corrente in [docs/16-roadmap.md](docs/16-roadmap.md) e gli ADR in [docs/adr/](do
 
 `apps/{web,admin,api,worker,mcp,mobile}` · `packages/{core,db,contracts,i18n,notifications,ui,config,testing}` · `infra/` · `docs/` · `brand/`
 
-Oggi esistono: `packages/core`, `packages/db`, `.github/workflows/` (CI, CodeQL), `brand/`, `docs/`.
+Oggi esistono: `apps/web` (vetrina IT/EN), `packages/core`, `packages/db`, `.github/workflows/` (CI, CodeQL), `brand/`, `docs/`.
 
 ## Comandi
 
@@ -33,7 +33,14 @@ DATABASE_URL=postgresql://postgres@127.0.0.1:5432/postgres pnpm test:integration
 DATABASE_URL=… pnpm --filter @arthur/db db:migrate   # migrazioni (ruolo app_owner)
 ```
 
-Da aggiungere quando esisteranno le app: `pnpm dev`, `pnpm test:e2e` (Playwright).
+```bash
+pnpm build                   # build di tutte le app (oggi: vetrina Next.js)
+pnpm --filter @arthur/web dev        # vetrina in sviluppo
+pnpm --filter @arthur/web start      # vetrina di produzione su :3100 (dopo pnpm build)
+pnpm test:e2e                # smoke test Playwright IT/EN (richiede la build; usa il server su :3100 se già avviato)
+```
+
+Nota Next.js 16: le API differiscono dalla memoria dei modelli. Leggi `apps/web/node_modules/next/dist/docs/` prima di scrivere codice Next.
 
 ## Regole non negoziabili 🔒
 
