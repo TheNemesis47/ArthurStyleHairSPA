@@ -401,11 +401,21 @@ stateDiagram-v2
 
 Difesa in profondità per il multi-tenant ([ADR-0009](adr/0009-multi-tenancy.md)): anche se una query dimenticasse il
 filtro per organizzazione, il database non restituirebbe dati di un'altra. Ogni transazione dell'applicazione
-imposta l'organizzazione corrente con `SET LOCAL app.org_id = '<uuid>'`. Se la variabile manca, la query **fallisce**
-invece di restituire tutto (*fail closed*).
+imposta l'organizzazione corrente con `set_config('app.org_id', '<uuid>', true)` (equivale a `SET LOCAL`). Se la variabile
+manca **o è vuota** (caso tipico con un pool di connessioni), la query **fallisce** con un errore esplicito invece di restituire tutto (*fail closed*).
 
 ```sql
-CREATE FUNCTION app_org() RETURNS uuid LANGUAGE sql STABLE AS $$ SELECT current_setting('app.org_id')::uuid $$;
+-- Con un pool di connessioni, dopo il primo SET LOCAL la variabile resta definita ma VUOTA nelle transazioni successive:
+-- per questo il controllo è esplicito (verificato nei test di integrazione, docs/research).
+CREATE FUNCTION app_org() RETURNS uuid LANGUAGE plpgsql STABLE AS $$
+DECLARE v text := current_setting('app.org_id', true);
+BEGIN
+  IF v IS NULL OR v = '' THEN
+    RAISE EXCEPTION 'app.org_id non impostato: ogni transazione deve dichiarare l''organizzazione'
+      USING ERRCODE = 'insufficient_privilege';
+  END IF;
+  RETURN v::uuid;
+END $$;
 
 ALTER TABLE locations  ENABLE ROW LEVEL SECURITY;
 ALTER TABLE customers  ENABLE ROW LEVEL SECURITY;
