@@ -52,3 +52,7 @@ stryker-tmp/
 # Cache degli hook opzionali di agent-skills (se attivati)
 .claude/sdd-cache/
 .claude/.simplify-ignore-cache/
+
+# Python
+__pycache__/
+*.pyc
