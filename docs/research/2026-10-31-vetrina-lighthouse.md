@@ -34,3 +34,8 @@ Data: 31/10/2026 · App: `apps/web` (Next.js 16.4, build di produzione, `next st
 - Smoke test Playwright: **48/48** (desktop + Pixel 7) — tutte le pagine IT/EN, `lang`, un solo `h1`, hreflang,
   nessun errore in console, navigazione e cambio lingua, menu mobile, form Malta senza invio di dati, `prefers-reduced-motion`, 404, sitemap.
 - Unit test del sito: 11/11 (rotte, dizionari, listino ↔ docs/21, formattazione, ciocche deterministiche).
+
+## Screenshot (31/10/2026)
+
+- [Home desktop, pagina intera](vetrina-home-desktop.webp)
+- [Home inglese su mobile](vetrina-home-en-mobile.webp)
