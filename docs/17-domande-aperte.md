@@ -67,3 +67,5 @@ Stato: `aggiornato 31/10/2026` (prima tornata di risposte) · Strumenti: `to-que
 | Q45 | P1 | La tua VPS: provider, **paese del data center** (UE?), CPU/RAM/disco, sistema operativo, altri progetti ospitati? | Capacità, GDPR, isolamento tra progetti, piano di backup |
 | Q46 | P1 | Confermi **35 giorni** come orizzonte di prenotazione? | Q15 era ambigua |
 | Q47 | P1 | Quale assistente userà Arturo (Claude, ChatGPT…)? Con il piano consumer i connettori MCP remoti potrebbero non essere disponibili o essere limitati ⚠️ da verificare | Fattibilità di F6 |
+| Q48 | P2 | Avete **foto prima/dopo** della stessa cliente, scattate con la stessa luce e inquadratura, e con **liberatoria** firmata? | Slider prima/dopo della pagina Lavori (F3.5, docs/08 §3) |
+| Q49 | P2 | Per la sezione **"20 anni"**: anni e tappe principali della carriera di Arturo, ed eventuali foto storiche utilizzabili? | Timeline animata (F3.5); senza dati veri la sezione non si fa |

@@ -96,6 +96,10 @@ export const en: Messages = {
     duration: 'Duration',
     price: 'Price',
     onRequest: 'On consultation',
+    filterLabel: 'Filter by category',
+    filterAll: 'All',
+    filterStatus: (count: number, category: string) =>
+      `${String(count)} ${count === 1 ? 'service' : 'services'}: ${category}`,
   },
   work: {
     title: 'Work',

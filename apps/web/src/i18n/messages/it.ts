@@ -97,6 +97,10 @@ export const it = {
     duration: 'Durata',
     price: 'Prezzo',
     onRequest: 'Su consulenza',
+    filterLabel: 'Filtra per categoria',
+    filterAll: 'Tutti',
+    filterStatus: (count: number, category: string) =>
+      `${String(count)} ${count === 1 ? 'servizio' : 'servizi'}: ${category}`,
   },
   work: {
     title: 'Lavori',

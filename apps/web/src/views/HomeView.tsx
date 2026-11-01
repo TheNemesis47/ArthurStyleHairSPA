@@ -40,7 +40,9 @@ export function HomeView({ locale }: { locale: Locale }) {
 
       <section className="section" aria-labelledby="services-title">
         <div className="wrap">
-          <h2 id="services-title">{m.home.servicesTitle}</h2>
+          <h2 id="services-title" data-reveal="title">
+            {m.home.servicesTitle}
+          </h2>
           <p className="muted">{m.home.servicesLead}</p>
           <PriceList locale={locale} only={['taglio-piega', 'colore']} headingLevel={3} />
           <p style={{ marginTop: '2rem' }}>
@@ -53,9 +55,11 @@ export function HomeView({ locale }: { locale: Locale }) {
 
       <section className="section" aria-labelledby="work-title">
         <div className="wrap">
-          <h2 id="work-title">{m.home.workTitle}</h2>
+          <h2 id="work-title" data-reveal="title">
+            {m.home.workTitle}
+          </h2>
           <div className="gallery">
-            <figure>
+            <figure data-reveal="media">
               <Image
                 src={onde}
                 alt={m.work.photos.onde}
@@ -63,7 +67,7 @@ export function HomeView({ locale }: { locale: Locale }) {
                 placeholder="blur"
               />
             </figure>
-            <figure>
+            <figure data-reveal="media">
               <Image
                 src={piega}
                 alt={m.work.photos.piega}
@@ -82,7 +86,9 @@ export function HomeView({ locale }: { locale: Locale }) {
 
       <section className="section" aria-labelledby="malta-title">
         <div className="wrap">
-          <h2 id="malta-title">{m.home.maltaTitle}</h2>
+          <h2 id="malta-title" data-reveal="title">
+            {m.home.maltaTitle}
+          </h2>
           <p>{m.home.maltaText}</p>
           <Link className="text-link" href={href('malta', locale)}>
             {m.home.maltaLink}

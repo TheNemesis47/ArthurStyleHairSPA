@@ -18,7 +18,7 @@ export function PriceList({
   return (
     <div className="price-groups">
       {groups.map((c) => (
-        <section key={c.key} className="price-group" aria-labelledby={`cat-${c.key}`}>
+        <section key={c.key} className="price-group" data-category={c.key} aria-labelledby={`cat-${c.key}`}>
           <Heading id={`cat-${c.key}`}>{c[locale]}</Heading>
           <ul className="price-list">
             {services

@@ -11,7 +11,7 @@ export function WorkView({ locale }: { locale: Locale }) {
   return (
     <PageHeader title={m.work.title} lead={m.work.lead}>
       <div className="gallery">
-        <figure>
+        <figure data-reveal="media">
           <Image
             src={onde}
             alt={m.work.photos.onde}
@@ -21,7 +21,7 @@ export function WorkView({ locale }: { locale: Locale }) {
           />
           <figcaption>{m.work.photos.onde}</figcaption>
         </figure>
-        <figure>
+        <figure data-reveal="media">
           <Image
             src={piega}
             alt={m.work.photos.piega}
