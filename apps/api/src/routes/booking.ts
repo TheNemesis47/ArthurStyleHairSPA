@@ -17,7 +17,7 @@ import {
   Problem,
   type ProblemCode,
 } from '@arthur/contracts';
-import { addDays, computeAvailability, localDateOf, toZonedIso, type Clock } from '@arthur/core';
+import { computeAvailability, localDateOf, toZonedIso, type Clock } from '@arthur/core';
 import {
   BookingRejected,
   confirmHold,
@@ -36,6 +36,7 @@ import {
 } from '@arthur/db';
 import { otpMessage, type Mailer } from '../mail.ts';
 import { sendProblem } from '../problems.ts';
+import { nearestSlots } from '../slots.ts';
 import {
   ensureHoldSession,
   hmac,
@@ -81,11 +82,9 @@ const OTP_TTL_MIN = 10;
 const OTP_MAX_ATTEMPTS = 5;
 const OTP_LIMITS = { perWindow: 3, windowMin: 15, perDay: 10 };
 const VERIFICATION_TOKEN_TTL_MIN = 15;
-const ALTERNATIVES = 3;
-const ALTERNATIVES_DAYS = 7;
 
 /** Rifiuti del dominio → codici RFC 9457 di docs/07 §6. */
-const REJECTION: Record<BookingRejection, ProblemCode> = {
+export const REJECTION: Record<BookingRejection, ProblemCode> = {
   'not-found': 'not-found',
   'not-held': 'not-held',
   'contact-not-verified': 'otp-required',
@@ -123,35 +122,6 @@ export const bookingRoutes: FastifyPluginCallback<Options> = (fastify, opts, don
   const tags = ['booking'];
   const perHour = (max: number) => ({ max, timeWindow: '1 hour' });
   const per10Min = (max: number) => ({ max, timeWindow: '10 minutes' });
-
-  /** I 3 orari liberi più vicini (stesso motore, stessa sessione): con un 409 l'utente non riparte da zero. */
-  async function alternatives(req: {
-    location: string;
-    services: readonly string[];
-    startMs: number;
-    timezone: string;
-    sessionHash: Buffer;
-  }): Promise<{ start: string; end: string }[]> {
-    const from = localDateOf(req.startMs, req.timezone);
-    const load = await loadAvailabilityInput(pool, organizationId, {
-      locationSlug: req.location,
-      serviceSlugs: req.services,
-      from,
-      to: addDays(from, ALTERNATIVES_DAYS - 1),
-      now: clock.now(),
-      ignore: { holdSessionHash: req.sessionHash },
-    });
-    if (!load.ok) return [];
-    const seen = new Map<number, number>();
-    for (const s of computeAvailability(load.input))
-      if (s.customerStart !== req.startMs && !seen.has(s.customerStart))
-        seen.set(s.customerStart, s.customerEnd);
-    return [...seen.entries()]
-      .sort((a, b) => Math.abs(a[0] - req.startMs) - Math.abs(b[0] - req.startMs) || a[0] - b[0])
-      .slice(0, ALTERNATIVES)
-      .sort((a, b) => a[0] - b[0])
-      .map(([s, e]) => ({ start: toZonedIso(s, req.timezone), end: toZonedIso(e, req.timezone) }));
-  }
 
   function holdResponse(reply: FastifyReply, v: HoldView) {
     reply.code(201).header('cache-control', 'no-store');
@@ -222,12 +192,12 @@ export const bookingRoutes: FastifyPluginCallback<Options> = (fastify, opts, don
       }
       const taken = async () =>
         sendProblem(reply, origin, 'slot-taken', {
-          alternatives: await alternatives({
+          alternatives: await nearestSlots(pool, organizationId, clock, {
             location,
             services,
             startMs,
             timezone: loc.timezone,
-            sessionHash,
+            ignore: { holdSessionHash: sessionHash },
           }),
         });
       const slot = computeAvailability(load.input).find((s) => s.customerStart === startMs);

@@ -872,6 +872,191 @@
           "manageToken"
         ]
       },
+      "ManagedBookingInput": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "held",
+              "confirmed",
+              "completed",
+              "cancelled",
+              "no_show",
+              "expired"
+            ]
+          },
+          "location": {
+            "type": "string",
+            "pattern": "^[a-z0-9-]{2,60}$"
+          },
+          "timezone": {
+            "type": "string"
+          },
+          "start": {
+            "type": "string",
+            "description": "ISO 8601 con offset della sede, es. 2026-11-03T10:30:00+01:00"
+          },
+          "end": {
+            "type": "string",
+            "description": "ISO 8601 con offset della sede, es. 2026-11-03T10:30:00+01:00"
+          },
+          "services": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "slug": {
+                  "type": "string",
+                  "pattern": "^[a-z0-9-]{2,60}$"
+                },
+                "name": {
+                  "type": "object",
+                  "propertyNames": {
+                    "type": "string"
+                  },
+                  "additionalProperties": {
+                    "type": "string"
+                  },
+                  "description": "Testo per lingua: { \"it\": \"…\", \"en\": \"…\" }"
+                },
+                "price": {
+                  "type": "object",
+                  "properties": {
+                    "amountCents": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 9007199254740991,
+                      "description": "Centesimi, IVA inclusa"
+                    },
+                    "currency": {
+                      "type": "string",
+                      "minLength": 3,
+                      "maxLength": 3
+                    },
+                    "isFrom": {
+                      "type": "boolean",
+                      "description": "\"A partire da\": il prezzo finale dipende dai capelli"
+                    }
+                  },
+                  "required": [
+                    "amountCents",
+                    "currency",
+                    "isFrom"
+                  ]
+                }
+              },
+              "required": [
+                "slug",
+                "name",
+                "price"
+              ]
+            }
+          },
+          "total": {
+            "type": "object",
+            "properties": {
+              "amountCents": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 9007199254740991,
+                "description": "Centesimi, IVA inclusa"
+              },
+              "currency": {
+                "type": "string",
+                "minLength": 3,
+                "maxLength": 3
+              },
+              "isFrom": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "amountCents",
+              "currency",
+              "isFrom"
+            ]
+          },
+          "canCancel": {
+            "type": "boolean"
+          },
+          "canReschedule": {
+            "type": "boolean"
+          },
+          "cancelUntil": {
+            "type": "string",
+            "description": "Ultimo istante per disdire online (poi telefono o WhatsApp)"
+          },
+          "rescheduleUntil": {
+            "type": "string",
+            "description": "Ultimo istante per spostare online"
+          },
+          "contact": {
+            "type": "object",
+            "properties": {
+              "phone": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "whatsapp": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            },
+            "required": [
+              "phone",
+              "whatsapp"
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "status",
+          "location",
+          "timezone",
+          "start",
+          "end",
+          "services",
+          "total",
+          "canCancel",
+          "canReschedule",
+          "cancelUntil",
+          "rescheduleUntil",
+          "contact"
+        ]
+      },
+      "CancelRequestInput": {
+        "type": "object",
+        "properties": {
+          "reason": {
+            "type": "string",
+            "maxLength": 300
+          }
+        }
+      },
+      "RescheduleRequestInput": {
+        "type": "object",
+        "properties": {
+          "start": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+            "description": "Uno degli orari di /v1/availability"
+          }
+        },
+        "required": [
+          "start"
+        ]
+      },
       "Problem": {
         "type": "object",
         "properties": {
@@ -1768,6 +1953,198 @@
           "manageToken"
         ],
         "additionalProperties": false
+      },
+      "ManagedBooking": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "held",
+              "confirmed",
+              "completed",
+              "cancelled",
+              "no_show",
+              "expired"
+            ]
+          },
+          "location": {
+            "type": "string",
+            "pattern": "^[a-z0-9-]{2,60}$"
+          },
+          "timezone": {
+            "type": "string"
+          },
+          "start": {
+            "type": "string",
+            "description": "ISO 8601 con offset della sede, es. 2026-11-03T10:30:00+01:00"
+          },
+          "end": {
+            "type": "string",
+            "description": "ISO 8601 con offset della sede, es. 2026-11-03T10:30:00+01:00"
+          },
+          "services": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "slug": {
+                  "type": "string",
+                  "pattern": "^[a-z0-9-]{2,60}$"
+                },
+                "name": {
+                  "type": "object",
+                  "propertyNames": {
+                    "type": "string"
+                  },
+                  "additionalProperties": {
+                    "type": "string"
+                  },
+                  "description": "Testo per lingua: { \"it\": \"…\", \"en\": \"…\" }"
+                },
+                "price": {
+                  "type": "object",
+                  "properties": {
+                    "amountCents": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 9007199254740991,
+                      "description": "Centesimi, IVA inclusa"
+                    },
+                    "currency": {
+                      "type": "string",
+                      "minLength": 3,
+                      "maxLength": 3
+                    },
+                    "isFrom": {
+                      "type": "boolean",
+                      "description": "\"A partire da\": il prezzo finale dipende dai capelli"
+                    }
+                  },
+                  "required": [
+                    "amountCents",
+                    "currency",
+                    "isFrom"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "required": [
+                "slug",
+                "name",
+                "price"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "total": {
+            "type": "object",
+            "properties": {
+              "amountCents": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 9007199254740991,
+                "description": "Centesimi, IVA inclusa"
+              },
+              "currency": {
+                "type": "string",
+                "minLength": 3,
+                "maxLength": 3
+              },
+              "isFrom": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "amountCents",
+              "currency",
+              "isFrom"
+            ],
+            "additionalProperties": false
+          },
+          "canCancel": {
+            "type": "boolean"
+          },
+          "canReschedule": {
+            "type": "boolean"
+          },
+          "cancelUntil": {
+            "type": "string",
+            "description": "Ultimo istante per disdire online (poi telefono o WhatsApp)"
+          },
+          "rescheduleUntil": {
+            "type": "string",
+            "description": "Ultimo istante per spostare online"
+          },
+          "contact": {
+            "type": "object",
+            "properties": {
+              "phone": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "whatsapp": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            },
+            "required": [
+              "phone",
+              "whatsapp"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "id",
+          "status",
+          "location",
+          "timezone",
+          "start",
+          "end",
+          "services",
+          "total",
+          "canCancel",
+          "canReschedule",
+          "cancelUntil",
+          "rescheduleUntil",
+          "contact"
+        ],
+        "additionalProperties": false
+      },
+      "CancelRequest": {
+        "type": "object",
+        "properties": {
+          "reason": {
+            "type": "string",
+            "maxLength": 300
+          }
+        },
+        "additionalProperties": false
+      },
+      "RescheduleRequest": {
+        "type": "object",
+        "properties": {
+          "start": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+            "description": "Uno degli orari di /v1/availability"
+          }
+        },
+        "required": [
+          "start"
+        ],
+        "additionalProperties": false
       }
     }
   },
@@ -2366,6 +2743,231 @@
             }
           },
           "422": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/manage/{token}": {
+      "get": {
+        "summary": "Prenotazione dal link di gestione",
+        "tags": [
+          "manage"
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9_-]{43}$"
+            },
+            "in": "path",
+            "name": "token",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ManagedBooking"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/manage/{token}/cancel": {
+      "post": {
+        "summary": "Disdetta self-service, entro la finestra della sede (default 4 giorni prima)",
+        "tags": [
+          "manage"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CancelRequestInput"
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9_-]{43}$"
+            },
+            "in": "path",
+            "name": "token",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ManagedBooking"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/manage/{token}/reschedule": {
+      "post": {
+        "summary": "Spostamento atomico: se il nuovo orario è occupato, la prenotazione resta com’era",
+        "tags": [
+          "manage"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RescheduleRequestInput"
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9_-]{43}$"
+            },
+            "in": "path",
+            "name": "token",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ManagedBooking"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/manage/{token}/ics": {
+      "get": {
+        "summary": "File calendario (.ics) della prenotazione",
+        "tags": [
+          "manage"
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9_-]{43}$"
+            },
+            "in": "path",
+            "name": "token",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "text/calendar (RFC 5545)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string",
+                  "description": "text/calendar (RFC 5545)"
+                }
+              }
+            }
+          },
+          "404": {
             "description": "Default Response",
             "content": {
               "application/json": {

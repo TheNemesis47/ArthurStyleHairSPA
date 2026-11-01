@@ -170,6 +170,8 @@ export interface HoldView {
   readonly expiresAt: Date | null;
   readonly totalCents: number;
   readonly sessionHash: Buffer | null;
+  /** Cresce a ogni modifica: SEQUENCE del file .ics, ETag del pannello. */
+  readonly version: number;
   readonly items: readonly {
     readonly slug: string;
     readonly name: Readonly<Record<string, string>>;
@@ -190,12 +192,13 @@ interface HoldRow {
   hold_expires_at: Date | null;
   total_price_cents: number;
   hold_session_hash: Buffer | null;
+  version: number;
 }
 
 async function readHold(c: pg.PoolClient, where: string, params: unknown[]): Promise<HoldView | undefined> {
   const r = await c.query<HoldRow>(
     `SELECT b.id, b.status, l.id AS location_id, l.slug AS location_slug, l.timezone, b.currency, lower(b.period) AS s,
-            upper(b.period) AS e, b.hold_expires_at, b.total_price_cents, b.hold_session_hash
+            upper(b.period) AS e, b.hold_expires_at, b.total_price_cents, b.hold_session_hash, b.version
        FROM bookings b JOIN locations l ON l.id = b.location_id
       WHERE ${where}`,
     params,
@@ -226,6 +229,7 @@ async function readHold(c: pg.PoolClient, where: string, params: unknown[]): Pro
     expiresAt: row.hold_expires_at,
     totalCents: row.total_price_cents,
     sessionHash: row.hold_session_hash,
+    version: row.version,
     items: items.rows.map((i) => ({
       slug: i.slug,
       name: i.name,
@@ -254,6 +258,15 @@ export function findByIdempotencyKey(
   return withOrgTx(pool, organizationId, (c) =>
     readHold(c, 'l.slug = $1 AND b.idempotency_key = $2', [locationSlug, key]),
   );
+}
+
+/** Prenotazione dal link di gestione: si cerca per SHA-256 del token, mai per il token in chiaro. */
+export function findByManageToken(
+  pool: pg.Pool,
+  organizationId: string,
+  tokenHash: Buffer,
+): Promise<HoldView | undefined> {
+  return withOrgTx(pool, organizationId, (c) => readHold(c, 'b.manage_token_hash = $1', [tokenHash]));
 }
 
 export type ReleaseResult = 'released' | 'not-found' | 'not-owned' | 'not-held';

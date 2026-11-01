@@ -243,3 +243,24 @@ export const Confirmation = z
       .describe('Per il link di gestione /v1/manage/{token}: si mostra una volta, poi arriva via email'),
   })
   .meta({ id: 'Confirmation' });
+
+// ───────────────────────────── Link di gestione (docs/07 §3) ─────────────────────────────
+
+/** Token a 256 bit in base64url (43 caratteri): solo l'hash è in DB. */
+export const ManageToken = z.string().regex(/^[A-Za-z0-9_-]{43}$/);
+
+export const ManagedBooking = BookingSummary.extend({
+  canCancel: z.boolean(),
+  canReschedule: z.boolean(),
+  cancelUntil: IsoDateTime.describe('Ultimo istante per disdire online (poi telefono o WhatsApp)'),
+  rescheduleUntil: IsoDateTime.describe('Ultimo istante per spostare online'),
+  contact: z.object({ phone: z.string().nullable(), whatsapp: z.string().nullable() }),
+}).meta({ id: 'ManagedBooking' });
+
+export const CancelRequest = z
+  .object({ reason: z.string().trim().max(300).optional() })
+  .meta({ id: 'CancelRequest' });
+
+export const RescheduleRequest = z
+  .object({ start: z.iso.datetime({ offset: true }).describe('Uno degli orari di /v1/availability') })
+  .meta({ id: 'RescheduleRequest' });

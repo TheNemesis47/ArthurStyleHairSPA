@@ -17,6 +17,7 @@ import type { Mailer } from './mail.ts';
 import { installErrorHandlers, sendProblem } from './problems.ts';
 import { bookingRoutes, DEFAULT_BOOKING_LIMITS, type BookingLimits } from './routes/booking.ts';
 import { healthRoutes } from './routes/health.ts';
+import { manageRoutes } from './routes/manage.ts';
 import { publicRoutes } from './routes/public.ts';
 import type { HumanVerifier } from './security.ts';
 
@@ -24,10 +25,11 @@ import type { HumanVerifier } from './security.ts';
  * Policy di autorizzazione dichiarata su OGNI rotta (AGENTS regola 3): una rotta senza policy blocca l'avvio.
  * - public: anonima (con rate limit);
  * - hold-session: l'oggetto appartiene alla sessione del cookie __Host-hold (controllo nel DB, per oggetto);
+ * - manage-token: il token del link di gestione individua UNA prenotazione (hash in DB);
  * - internal: healthcheck, non esposti da Caddy.
  * Cliente, staff e owner arrivano con Better Auth (F1.5).
  */
-export type AuthPolicy = 'public' | 'hold-session' | 'internal';
+export type AuthPolicy = 'public' | 'hold-session' | 'manage-token' | 'internal';
 
 declare module 'fastify' {
   interface FastifyContextConfig {
@@ -61,6 +63,11 @@ export const DEFAULT_RATE_LIMITS: RateLimits = { global: 300, availability: 60, 
 
 const UNSAFE_METHODS = new Set(['POST', 'PUT', 'PATCH', 'DELETE']);
 
+/** Il token del link di gestione è un segreto: nei log diventa *** (AGENTS regola 5). */
+export function redactUrl(url: string): string {
+  return url.replace(/\/manage\/[^/?#]+/g, '/manage/***');
+}
+
 export async function buildApp(deps: AppDeps): Promise<FastifyInstance> {
   const app = Fastify({
     trustProxy: deps.trustProxy ?? false,
@@ -72,6 +79,13 @@ export async function buildApp(deps: AppDeps): Promise<FastifyInstance> {
             level: deps.logLevel,
             // niente cookie, token o header di autorizzazione nei log (AGENTS regola 5)
             redact: ['req.headers.authorization', 'req.headers.cookie', 'res.headers["set-cookie"]'],
+            // Solo metodo e percorso oscurato: niente IP (dato personale) né query string.
+            serializers: {
+              req: (req: { method: string; url: string }) => ({
+                method: req.method,
+                url: redactUrl(req.url),
+              }),
+            },
           },
   }).withTypeProvider<ZodTypeProvider>();
 
@@ -161,6 +175,14 @@ export async function buildApp(deps: AppDeps): Promise<FastifyInstance> {
     mailer: deps.mailer,
     otpSecret: deps.secrets.otp,
     limits,
+  });
+  await app.register(manageRoutes, {
+    prefix: '/v1',
+    pool: deps.pool,
+    organizationId: deps.organizationId,
+    clock: deps.clock,
+    publicOrigin: deps.publicOrigin,
+    limit: limits.writesPer10Min,
   });
   return app;
 }

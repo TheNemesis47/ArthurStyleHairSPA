@@ -2,6 +2,7 @@ export { advisoryLockKeys } from './lock-keys.ts';
 export {
   createHold,
   findByIdempotencyKey,
+  findByManageToken,
   getHold,
   releaseHold,
   type CreateHoldInput,

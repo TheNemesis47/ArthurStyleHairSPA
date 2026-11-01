@@ -69,6 +69,11 @@ Stato: `bozza` · Implementazione: `apps/api` · Contratto: OpenAPI 3.1 generata
   token resta valido. La policy `require_contact_otp = 'new_customers'` dal sito vale come `always`: dire "per te non serve"
   rivelerebbe chi è già cliente. Una seconda conferma dello stesso hold → `409 not-held` (il token di gestione non si può
   restituire due volte: in DB c'è solo l'hash).
+- **Link di gestione:** il token sta nel percorso, quindi il logger lo sostituisce con `***` e non registra IP né query
+  string; helmet manda `Referrer-Policy: no-referrer`. Disdetta e spostamento valgono fino a `cancel_window_min` /
+  `reschedule_window_min` prima dell'appuntamento **attuale** (default 4 giorni); oltre → `422 outside-policy` e la pagina
+  mostra telefono e WhatsApp. Lo spostamento ricalcola lo slot ignorando le allocazioni della prenotazione stessa.
+  Il file `.ics` usa `SEQUENCE = version`, così il calendario aggiorna l'evento spostato invece di duplicarlo.
 
 ## 4. Endpoint cliente autenticato
 
