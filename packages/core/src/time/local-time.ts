@@ -55,6 +55,13 @@ export function localDateOf(at: EpochMs, timezone: string): LocalDate {
   return Temporal.Instant.fromEpochMilliseconds(at).toZonedDateTimeISO(timezone).toPlainDate().toString();
 }
 
+/** Istante → ISO 8601 con l'offset della sede, al secondo (es. '2026-11-03T10:30:00+01:00'): il formato delle risposte API. */
+export function toZonedIso(at: EpochMs, timezone: string): string {
+  return Temporal.Instant.fromEpochMilliseconds(at)
+    .toZonedDateTimeISO(timezone)
+    .toString({ timeZoneName: 'never', smallestUnit: 'second', roundingMode: 'trunc' });
+}
+
 export function isValidLocalDate(date: string): boolean {
   try {
     return Temporal.PlainDate.from(date, { overflow: 'reject' }).toString() === date;

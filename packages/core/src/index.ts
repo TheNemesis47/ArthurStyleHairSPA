@@ -5,6 +5,9 @@ export { computeAvailability, MAX_RANGE_DAYS } from './booking/availability.js';
 export { type Clock, fixedClock } from './time/clock.js';
 export {
   localDateOf,
+  isValidLocalDate,
+  startOfNextDay,
+  toZonedIso,
   zonedEpoch,
   zonedEpochStrict,
   addDays,

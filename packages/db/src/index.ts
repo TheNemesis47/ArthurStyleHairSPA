@@ -14,3 +14,19 @@ export {
   type RescheduleInput,
 } from './bookings.ts';
 export { withOrgTx } from './tx.ts';
+export {
+  findOrganizationId,
+  getLocation,
+  listLocations,
+  listServices,
+  loadAvailabilityInput,
+  type AvailabilityLoad,
+  type AvailabilityRequest,
+  type BookableService,
+  type CatalogCategory,
+  type CatalogService,
+  type LocationDetail,
+  type LocationSummary,
+  type OpeningHours,
+} from './catalog.ts';
+export { CATEGORY_NAMES, readMockSeed, seed, SeedData } from './seed.ts';
