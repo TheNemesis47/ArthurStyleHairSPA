@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import fc from 'fast-check';
-import { computeAvailability } from '../src/booking/availability.js';
-import { IntervalSet } from '../src/booking/interval-set.js';
-import type { ExistingAllocation, ServiceDef } from '../src/booking/types.js';
-import { ALL_STAFF2, ARTURO, POOLS, at, input, localHM } from './fixtures-ext.js';
+import { computeAvailability } from '../src/booking/availability.ts';
+import { IntervalSet } from '../src/booking/interval-set.ts';
+import type { ExistingAllocation, ServiceDef } from '../src/booking/types.ts';
+import { ALL_STAFF2, ARTURO, POOLS, at, input, localHM } from './fixtures-ext.ts';
 
 const MIN = 60_000;
 const DAY_START = at('2026-11-03T08:00');

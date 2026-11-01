@@ -1,11 +1,16 @@
-import type { Interval } from './types.js';
+import type { Interval } from './types.ts';
 
 /**
  * Insieme di intervalli semiaperti [start, end) in forma normale: ordinati, disgiunti, non adiacenti, non vuoti.
  * Immutabile. È la base di tutto il calcolo di disponibilità (orari − eccezioni − allocazioni).
  */
 export class IntervalSet {
-  private constructor(private readonly items: readonly Interval[]) {}
+  // Campo esplicito (non "parameter property"): Node esegue questo file togliendo solo i tipi.
+  private readonly items: readonly Interval[];
+
+  private constructor(items: readonly Interval[]) {
+    this.items = items;
+  }
 
   static empty(): IntervalSet {
     return new IntervalSet([]);

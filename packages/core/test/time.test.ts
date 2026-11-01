@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { isValidLocalDate, toZonedIso } from '../src/index.js';
+import { isValidLocalDate, toZonedIso } from '../src/index.ts';
 
 describe('toZonedIso', () => {
   it("istante → ISO 8601 con l'offset della sede, in inverno e in estate", () => {

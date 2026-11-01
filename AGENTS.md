@@ -8,15 +8,15 @@ Piattaforma digitale di **Arthur Style** (salone di parrucchiere a Firenze, in f
 GSAP/Three.js, prenotazione online con mutua esclusione garantita dal database, pannello di gestione, app iOS/Android
 (Expo), API unica, server MCP per agenti. Contesto completo: [README.md](README.md) e [docs/](docs/README.md).
 
-**Stato:** sviluppo iniziato (F0 + F1). Esistono `packages/core` (motore di disponibilità) e `packages/db` (migrazioni,
-lock, creazione hold). Prima di scrivere codice si leggono [CONSTRAINTS.md](CONSTRAINTS.md), il documento della fase
+**Stato:** sviluppo iniziato (F0 + F1). Esistono `packages/core` (motore di disponibilità), `packages/db` (migrazioni,
+lock, hold, letture del catalogo, seed), `packages/contracts` (schemi zod + OpenAPI) e `apps/api` (Fastify, endpoint pubblici). Prima di scrivere codice si leggono [CONSTRAINTS.md](CONSTRAINTS.md), il documento della fase
 corrente in [docs/16-roadmap.md](docs/16-roadmap.md) e gli ADR in [docs/adr/](docs/adr/README.md).
 
 ## Struttura (prevista, vedi [docs/04](docs/04-architettura.md) §3)
 
 `apps/{web,admin,api,worker,mcp,mobile}` · `packages/{core,db,contracts,i18n,notifications,ui,config,testing}` · `infra/` · `docs/` · `brand/`
 
-Oggi esistono: `apps/web` (vetrina IT/EN), `packages/core`, `packages/db`, `.github/workflows/` (CI, CodeQL), `brand/`, `docs/`.
+Oggi esistono: `apps/web` (vetrina IT/EN), `apps/api`, `packages/core`, `packages/db`, `packages/contracts`, `.github/workflows/` (CI, CodeQL), `brand/`, `docs/`.
 
 ## Comandi
 
@@ -31,6 +31,12 @@ pnpm format:check            # Prettier
 DATABASE_URL=postgresql://postgres@127.0.0.1:5432/postgres pnpm test:integration
                              # PostgreSQL di TEST (crea e distrugge un DB usa e getta; mai produzione)
 DATABASE_URL=… pnpm --filter @arthur/db db:migrate   # migrazioni (ruolo app_owner)
+DATABASE_URL=… pnpm --filter @arthur/db db:seed:mock # dati di prova di docs/21 (solo sviluppo/staging)
+```
+
+```bash
+DATABASE_URL=… ORGANIZATION_SLUG=arthur-style pnpm --filter @arthur/api start   # API su :3200 (config: apps/api/src/config.ts)
+pnpm --filter @arthur/api openapi   # rigenera packages/contracts/openapi.json (un test fallisce se non è aggiornato)
 ```
 
 ```bash

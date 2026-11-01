@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import fc from 'fast-check';
-import { IntervalSet } from '../src/booking/interval-set.js';
+import { IntervalSet } from '../src/booking/interval-set.ts';
 
 const iv = (start: number, end: number) => ({ start, end });
 

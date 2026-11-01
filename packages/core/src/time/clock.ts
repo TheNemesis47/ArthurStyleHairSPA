@@ -1,4 +1,4 @@
-import type { EpochMs } from '../booking/types.js';
+import type { EpochMs } from '../booking/types.ts';
 
 /** Porta del tempo: il dominio non legge mai l'orologio di sistema (AGENTS regola 7). */
 export interface Clock {

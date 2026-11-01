@@ -14,8 +14,11 @@ function overlapReason(e: unknown): BookingRejection {
 
 /** Errore di dominio previsto: l'API lo traduce in problem+json (docs/07 §6). */
 export class BookingRejected extends Error {
-  constructor(readonly reason: BookingRejection) {
+  readonly reason: BookingRejection;
+
+  constructor(reason: BookingRejection) {
     super(reason);
+    this.reason = reason;
   }
 }
 

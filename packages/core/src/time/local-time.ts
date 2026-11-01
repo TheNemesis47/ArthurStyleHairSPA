@@ -1,5 +1,5 @@
 import { Temporal } from 'temporal-polyfill';
-import type { EpochMs, LocalDate, LocalTime, Weekday } from '../booking/types.js';
+import type { EpochMs, LocalDate, LocalTime, Weekday } from '../booking/types.ts';
 
 const TIME_RE = /^([01]\d|2[0-3]):([0-5]\d)$/;
 

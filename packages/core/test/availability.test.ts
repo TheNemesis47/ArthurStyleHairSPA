@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { computeAvailability } from '../src/booking/availability.js';
-import type { ServiceDef } from '../src/booking/types.js';
+import { computeAvailability } from '../src/booking/availability.ts';
+import type { ServiceDef } from '../src/booking/types.ts';
 import {
   ALL_STAFF2,
   ARTURO,
@@ -16,7 +16,7 @@ import {
   localHM,
   staff,
   week,
-} from './fixtures-ext.js';
+} from './fixtures-ext.ts';
 
 const starts = (slots: ReturnType<typeof computeAvailability>) => slots.map((s) => localHM(s.start));
 

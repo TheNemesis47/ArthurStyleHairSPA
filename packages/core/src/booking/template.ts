@@ -1,4 +1,4 @@
-import type { AllocationKind, PoolRequirement, ServiceDef } from './types.js';
+import type { AllocationKind, PoolRequirement, ServiceDef } from './types.ts';
 
 /** Un tratto del template, con offset in minuti rispetto all'inizio dell'occupazione. */
 export interface Segment {

@@ -3,3 +3,5 @@ brand/
 .claude/
 *.md
 pnpm-lock.yaml
+# generato da apps/api (pnpm --filter @arthur/api openapi); un test verifica che sia aggiornato
+packages/contracts/openapi.json

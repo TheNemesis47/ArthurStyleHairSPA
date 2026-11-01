@@ -1,8 +1,8 @@
-export * from './booking/types.js';
-export { IntervalSet } from './booking/interval-set.js';
-export { buildTemplate, scaledDuration, type Segment, type Template } from './booking/template.js';
-export { computeAvailability, MAX_RANGE_DAYS } from './booking/availability.js';
-export { type Clock, fixedClock } from './time/clock.js';
+export * from './booking/types.ts';
+export { IntervalSet } from './booking/interval-set.ts';
+export { buildTemplate, scaledDuration, type Segment, type Template } from './booking/template.ts';
+export { computeAvailability, MAX_RANGE_DAYS } from './booking/availability.ts';
+export { type Clock, fixedClock } from './time/clock.ts';
 export {
   localDateOf,
   isValidLocalDate,
@@ -13,4 +13,4 @@ export {
   addDays,
   daysBetween,
   weekdayOf,
-} from './time/local-time.js';
+} from './time/local-time.ts';

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { buildTemplate, scaledDuration } from '../src/booking/template.js';
-import type { ServiceDef } from '../src/booking/types.js';
+import { buildTemplate, scaledDuration } from '../src/booking/template.ts';
+import type { ServiceDef } from '../src/booking/types.ts';
 
 const svc = (over: Partial<ServiceDef> = {}): ServiceDef => ({
   id: 's',

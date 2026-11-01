@@ -53,7 +53,8 @@ gantt
 | F1.5 Auth | ⏳ | — |
 | **F3a Vetrina** | ✅ 18 pagine IT/EN statiche, brand, ciocche animate (GSAP a riposo), listino mock, lavori, contatti, Malta (form solo UI), legali segnaposto. Lighthouse mobile 100/100/100/100, 48 smoke test | `apps/web`, [research](research/2026-10-31-vetrina-lighthouse.md) |
 | F3.5 Animazioni GSAP | 🟡 Fatte: titoli per righe (SplitText + ScrollTrigger, nome accessibile intero), foto in ingresso, filtro del listino con Flip, pulsanti magnetici, cambio pagina con "taglio" (React `ViewTransition`). Tutto a riposo e disattivato con `prefers-reduced-motion`; Lighthouse mobile home 99, servizi 100; 54 test E2E. **In attesa di contenuti:** slider prima/dopo con Draggable (Q48), timeline "20 anni" (Q49). **Rinviato:** Lenis (scroll morbido), da valutare con un test su Android per accessibilità e INP | `apps/web/src/components/{MotionLayer,ServiceFilter}.tsx` |
-| F1.6 API | ⏳ | — |
+| F1.6 API | 🟡 Base pronta: Fastify 5 + zod, errori RFC 9457, helmet, CORS, rate limit per IP (header `RateLimit-*`), policy di autorizzazione obbligatoria su ogni rotta (l'avvio fallisce senza), OpenAPI 3.1 generata e verificata da un test. Endpoint pubblici: `GET /v1/locations`, `/v1/locations/{slug}`, `/v1/locations/{slug}/services`, `/v1/availability`, health. 20 test HTTP su PostgreSQL. **Mancano:** hold, OTP, conferma, link di gestione, endpoint cliente e admin | `apps/api`, `packages/contracts` |
+| F1.8 Seed | 🟡 Seed dal blocco YAML di docs/21 (dati mock), validato con zod; da rifare con il listino reale (Q09) | `packages/db/src/seed.ts` |
 
 **Milestone:**
 

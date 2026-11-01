@@ -6,7 +6,7 @@ import type {
   StaffDef,
   WeeklyWindow,
   Weekday,
-} from '../src/booking/types.js';
+} from '../src/booking/types.ts';
 
 export const TZ = 'Europe/Rome';
 

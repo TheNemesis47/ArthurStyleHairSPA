@@ -1,5 +1,5 @@
-import { IntervalSet } from './interval-set.js';
-import { buildTemplate, type Segment, type Template } from './template.js';
+import { IntervalSet } from './interval-set.ts';
+import { buildTemplate, type Segment, type Template } from './template.ts';
 import type {
   Assignment,
   AvailabilityInput,
@@ -11,7 +11,7 @@ import type {
   Slot,
   StaffDef,
   WeeklyWindow,
-} from './types.js';
+} from './types.ts';
 import {
   addDays,
   daysBetween,
@@ -22,7 +22,7 @@ import {
   weekdayOf,
   zonedEpoch,
   zonedEpochStrict,
-} from '../time/local-time.js';
+} from '../time/local-time.ts';
 
 const MINUTE = 60_000;
 

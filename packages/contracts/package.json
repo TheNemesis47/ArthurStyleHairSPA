@@ -1,0 +1,22 @@
+{
+  "name": "@arthur/contracts",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Schemi zod condivisi tra API, sito, pannello, app e MCP; OpenAPI generata (docs/07).",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc -p tsconfig.json",
+    "test": "vitest run --passWithNoTests"
+  },
+  "dependencies": {
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@types/node": "^22.20.5",
+    "typescript": "~6.0.3",
+    "vitest": "^4.1.12"
+  }
+}

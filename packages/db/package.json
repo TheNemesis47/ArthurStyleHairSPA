@@ -5,7 +5,8 @@
   "type": "module",
   "description": "Accesso ai dati: migrazioni SQL, lock, repository delle prenotazioni.",
   "exports": {
-    ".": "./src/index.ts"
+    ".": "./src/index.ts",
+    "./testing": "./test-integration/setup.ts"
   },
   "scripts": {
     "typecheck": "tsc -p tsconfig.json",
