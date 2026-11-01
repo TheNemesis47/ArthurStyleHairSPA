@@ -20,6 +20,11 @@ const TITLES: Record<ProblemCode, string> = {
   'otp-invalid': 'Codice non valido',
   'otp-locked': 'Troppi tentativi, riprova più tardi',
   'version-conflict': 'Qualcun altro ha modificato questi dati',
+  'human-check-failed': 'Verifica anti-bot non superata',
+  'idempotency-key-reused': 'Idempotency-Key già usata per un’altra richiesta',
+  'not-held': 'La prenotazione non è più in attesa di conferma',
+  'not-active': 'La prenotazione non è attiva',
+  'forbidden-origin': 'Origine della richiesta non ammessa',
 };
 
 const STATUS: Record<ProblemCode, number> = {
@@ -39,15 +44,21 @@ const STATUS: Record<ProblemCode, number> = {
   'otp-invalid': 401,
   'otp-locked': 429,
   'version-conflict': 412,
+  'human-check-failed': 403,
+  'idempotency-key-reused': 422,
+  'not-held': 409,
+  'not-active': 409,
+  'forbidden-origin': 403,
 };
 
 export type FieldErrors = Record<string, string[]>;
+export interface ProblemExtra {
+  detail?: string;
+  fieldErrors?: FieldErrors;
+  alternatives?: { start: string; end: string }[];
+}
 
-export function problemBody(
-  origin: string,
-  code: ProblemCode,
-  extra: { detail?: string; fieldErrors?: FieldErrors } = {},
-): Problem {
+export function problemBody(origin: string, code: ProblemCode, extra: ProblemExtra = {}): Problem {
   return { type: `${origin}/problems/${code}`, title: TITLES[code], status: STATUS[code], ...extra };
 }
 
@@ -55,7 +66,7 @@ export function sendProblem(
   reply: FastifyReply,
   origin: string,
   code: ProblemCode,
-  extra: { detail?: string; fieldErrors?: FieldErrors } = {},
+  extra: ProblemExtra = {},
 ): FastifyReply {
   return reply
     .code(STATUS[code])

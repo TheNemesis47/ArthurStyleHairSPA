@@ -20,6 +20,7 @@ apps/mobile/android/
 *.mobileprovision
 
 # Ambiente e segreti (mai in repo)
+.dev-mail/
 .env
 .env.*
 !.env.example

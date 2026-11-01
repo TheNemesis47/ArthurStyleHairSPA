@@ -1,3 +1,4 @@
+import cookie from '@fastify/cookie';
 import cors from '@fastify/cors';
 import helmet from '@fastify/helmet';
 import rateLimit from '@fastify/rate-limit';
@@ -12,17 +13,21 @@ import {
 } from 'fastify-type-provider-zod';
 import type pg from 'pg';
 import type { Clock } from '@arthur/core';
+import type { Mailer } from './mail.ts';
 import { installErrorHandlers, sendProblem } from './problems.ts';
+import { bookingRoutes, DEFAULT_BOOKING_LIMITS, type BookingLimits } from './routes/booking.ts';
 import { healthRoutes } from './routes/health.ts';
 import { publicRoutes } from './routes/public.ts';
+import type { HumanVerifier } from './security.ts';
 
 /**
  * Policy di autorizzazione dichiarata su OGNI rotta (AGENTS regola 3): una rotta senza policy blocca l'avvio.
  * - public: anonima (con rate limit);
+ * - hold-session: l'oggetto appartiene alla sessione del cookie __Host-hold (controllo nel DB, per oggetto);
  * - internal: healthcheck, non esposti da Caddy.
  * Cliente, staff e owner arrivano con Better Auth (F1.5).
  */
-export type AuthPolicy = 'public' | 'internal';
+export type AuthPolicy = 'public' | 'hold-session' | 'internal';
 
 declare module 'fastify' {
   interface FastifyContextConfig {
@@ -38,11 +43,23 @@ export interface AppDeps {
   readonly corsOrigins?: readonly string[];
   readonly trustProxy?: string | boolean;
   readonly logLevel?: string;
-  /** Limiti per IP al minuto (sovrascrivibili nei test). */
-  readonly rateLimits?: { readonly global: number; readonly availability: number };
+  /** Firma del cookie __Host-hold e chiave HMAC degli OTP (config.ts: ≥ 32 caratteri, diverse). */
+  readonly secrets: { readonly holdCookie: string; readonly otp: string };
+  readonly human: HumanVerifier;
+  readonly mailer: Mailer;
+  /** Limiti per IP (sovrascrivibili nei test). */
+  readonly rateLimits?: Partial<RateLimits>;
 }
 
-export const DEFAULT_RATE_LIMITS = { global: 300, availability: 60 } as const;
+export interface RateLimits extends BookingLimits {
+  /** Richieste al minuto, globali e per la disponibilità. */
+  readonly global: number;
+  readonly availability: number;
+}
+
+export const DEFAULT_RATE_LIMITS: RateLimits = { global: 300, availability: 60, ...DEFAULT_BOOKING_LIMITS };
+
+const UNSAFE_METHODS = new Set(['POST', 'PUT', 'PATCH', 'DELETE']);
 
 export async function buildApp(deps: AppDeps): Promise<FastifyInstance> {
   const app = Fastify({
@@ -87,9 +104,31 @@ export async function buildApp(deps: AppDeps): Promise<FastifyInstance> {
     contentSecurityPolicy: { directives: { defaultSrc: ["'none'"], frameAncestors: ["'none'"] } },
     crossOriginResourcePolicy: { policy: 'same-site' },
   });
-  await app.register(cors, { origin: [...(deps.corsOrigins ?? [])], methods: ['GET'] });
+  const corsOrigins = [...(deps.corsOrigins ?? [])];
+  await app.register(cors, {
+    origin: corsOrigins,
+    methods: ['GET', 'POST', 'DELETE'],
+    credentials: true, // il cookie __Host-hold viaggia con fetch(..., { credentials: 'include' })
+    allowedHeaders: ['content-type', 'idempotency-key', 'cf-turnstile-response'],
+    maxAge: 600,
+  });
+  // Difesa CSRF in profondità: una scrittura che arriva da un browser deve venire da un'origine ammessa.
+  // (Le app native non mandano Origin; SameSite=Lax copre già i siti terzi.)
+  app.addHook('onRequest', (request, reply, next) => {
+    const requestOrigin = request.headers.origin;
+    if (
+      UNSAFE_METHODS.has(request.method) &&
+      requestOrigin !== undefined &&
+      !corsOrigins.includes(requestOrigin)
+    ) {
+      void sendProblem(reply, deps.publicOrigin, 'forbidden-origin');
+      return;
+    }
+    next();
+  });
+  await app.register(cookie, { secret: deps.secrets.holdCookie, algorithm: 'sha256' });
 
-  const limits = deps.rateLimits ?? DEFAULT_RATE_LIMITS;
+  const limits: RateLimits = { ...DEFAULT_RATE_LIMITS, ...deps.rateLimits };
   await app.register(rateLimit, {
     global: true,
     max: limits.global,
@@ -111,6 +150,17 @@ export async function buildApp(deps: AppDeps): Promise<FastifyInstance> {
     clock: deps.clock,
     publicOrigin: deps.publicOrigin,
     availabilityLimit: limits.availability,
+  });
+  await app.register(bookingRoutes, {
+    prefix: '/v1',
+    pool: deps.pool,
+    organizationId: deps.organizationId,
+    clock: deps.clock,
+    publicOrigin: deps.publicOrigin,
+    human: deps.human,
+    mailer: deps.mailer,
+    otpSecret: deps.secrets.otp,
+    limits,
   });
   return app;
 }

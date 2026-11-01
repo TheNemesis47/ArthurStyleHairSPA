@@ -1,32 +1,21 @@
 import type { FastifyInstance } from 'fastify';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { fixedClock } from '@arthur/core';
-import { findOrganizationId, readMockSeed, seed } from '@arthur/db';
-import { createTestDb, type TestDb } from '@arthur/db/testing';
-import { buildApp } from '../src/app.ts';
+import { createHarness, ORIGIN, PROBLEM, type Harness } from './harness.ts';
 
-const DOC = new URL('../../../docs/21-dati-mock.md', import.meta.url).pathname;
-const ORIGIN = 'https://api.test.invalid';
 const NOW = new Date('2026-11-02T08:00:00+01:00').getTime(); // lunedì, salone chiuso
-const PROBLEM = 'application/problem+json; charset=utf-8';
 
-let db: TestDb;
+let h: Harness;
 let app: FastifyInstance;
-let organizationId: string;
 
 beforeAll(async () => {
-  db = await createTestDb();
-  await seed(db.admin, readMockSeed(DOC));
-  const id = await findOrganizationId(db.app, 'arthur-style');
-  if (id === undefined) throw new Error('seed mancante');
-  organizationId = id;
-  // L'API usa il ruolo app_api, soggetto a RLS, come in produzione
-  app = await buildApp({ pool: db.app, organizationId, clock: fixedClock(NOW), publicOrigin: ORIGIN });
+  h = await createHarness(NOW);
+  app = await h.build();
 });
 
 afterAll(async () => {
   await app.close();
-  await db.drop();
+  await h.db.drop();
 });
 
 const get = (url: string) => app.inject({ method: 'GET', url });
@@ -168,13 +157,7 @@ describe('sicurezza HTTP', () => {
   });
 
   it('rate limit sulla disponibilità: oltre il limite 429 con Retry-After', async () => {
-    const limited = await buildApp({
-      pool: db.app,
-      organizationId,
-      clock: fixedClock(NOW),
-      publicOrigin: ORIGIN,
-      rateLimits: { global: 100, availability: 2 },
-    });
+    const limited = await h.build({ clock: fixedClock(NOW), rateLimits: { global: 100, availability: 2 } });
     try {
       const q = '/v1/availability?location=firenze&services=gloss&from=2026-11-03&to=2026-11-03';
       expect((await limited.inject(q)).statusCode).toBe(200);
@@ -194,12 +177,7 @@ describe('sicurezza HTTP', () => {
   });
 
   it('una rotta senza policy di autorizzazione blocca l’avvio', async () => {
-    const guarded = await buildApp({
-      pool: db.app,
-      organizationId,
-      clock: fixedClock(NOW),
-      publicOrigin: ORIGIN,
-    });
+    const guarded = await h.build();
     expect(() => guarded.get('/v1/segreta', () => 'no')).toThrow(/senza policy di autorizzazione/);
     await guarded.close();
   });

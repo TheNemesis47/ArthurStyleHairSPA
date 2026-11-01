@@ -27,6 +27,10 @@ export const Problem = z
     detail: z.string().optional(),
     instance: z.string().optional(),
     fieldErrors: z.record(z.string(), z.array(z.string())).optional(),
+    alternatives: z
+      .array(z.object({ start: IsoDateTime, end: IsoDateTime }))
+      .optional()
+      .describe('Con slot-taken: gli orari liberi più vicini a quello richiesto'),
   })
   .meta({ id: 'Problem' });
 export type Problem = z.infer<typeof Problem>;
@@ -49,6 +53,11 @@ export const ProblemCode = z.enum([
   'otp-invalid',
   'otp-locked',
   'version-conflict',
+  'human-check-failed',
+  'idempotency-key-reused',
+  'not-held',
+  'not-active',
+  'forbidden-origin',
 ]);
 export type ProblemCode = z.infer<typeof ProblemCode>;
 
@@ -108,19 +117,19 @@ export const ServiceCatalog = z
 
 export const MAX_SERVICES_PER_BOOKING = 5;
 
+const ServiceSlugs = z
+  .array(Slug)
+  .min(1)
+  .max(MAX_SERVICES_PER_BOOKING)
+  .refine((a) => new Set(a).size === a.length, 'servizi ripetuti');
+
 export const AvailabilityQuery = z.object({
   location: Slug,
   services: z
     .string()
     .describe('Slug dei servizi separati da virgola, nell’ordine di esecuzione (max 5)')
     .transform((s) => s.split(','))
-    .pipe(
-      z
-        .array(Slug)
-        .min(1)
-        .max(MAX_SERVICES_PER_BOOKING)
-        .refine((a) => new Set(a).size === a.length, 'servizi ripetuti'),
-    ),
+    .pipe(ServiceSlugs),
   from: LocalDate,
   to: LocalDate,
 });
@@ -139,3 +148,98 @@ export const Availability = z
   .meta({ id: 'Availability' });
 
 export const Health = z.object({ status: z.literal('ok') });
+
+// ───────────────────────────── Prenotazione pubblica (docs/07 §3) ─────────────────────────────
+
+export const Locale = z.enum(['it', 'en']);
+/** Normalizzata (spazi tolti, minuscole) prima della validazione: un indirizzo = un profilo (Q39). */
+export const Email = z.string().trim().toLowerCase().max(254).pipe(z.email());
+/** Nomi: niente caratteri di controllo (finiscono in email, calendario e pannello). */
+const PersonName = z
+  .string()
+  .trim()
+  .min(1)
+  .max(80)
+  .regex(/^[^\p{Cc}\p{Cf}]+$/u, 'caratteri non ammessi');
+
+export const Money = z.object({
+  amountCents: z.number().int().min(0).describe('Centesimi, IVA inclusa'),
+  currency: z.string().length(3),
+});
+
+export const BookingLine = z.object({
+  slug: Slug,
+  name: LocalizedText,
+  price: Price,
+});
+
+export const BookingSummary = z
+  .object({
+    id: z.uuid(),
+    status: z.enum(['held', 'confirmed', 'completed', 'cancelled', 'no_show', 'expired']),
+    location: Slug,
+    timezone: z.string(),
+    start: IsoDateTime,
+    end: IsoDateTime,
+    services: z.array(BookingLine),
+    total: Money.extend({ isFrom: z.boolean() }),
+  })
+  .meta({ id: 'BookingSummary' });
+
+export const HoldRequest = z
+  .object({
+    location: Slug,
+    services: ServiceSlugs.describe('Slug dei servizi, nell’ordine di esecuzione (max 5)'),
+    start: z.iso.datetime({ offset: true }).describe('Uno degli orari restituiti da /v1/availability'),
+  })
+  .meta({ id: 'HoldRequest' });
+
+export const Hold = BookingSummary.extend({
+  expiresAt: IsoDateTime.describe('Oltre questo istante la conferma risponde 410'),
+}).meta({ id: 'Hold' });
+
+/** Header dei POST pubblici che creano qualcosa (docs/07 §1, §2). */
+export const CreateHeaders = z.object({
+  'idempotency-key': z
+    .uuid()
+    .describe('UUID generato dal client: una ripetizione restituisce la stessa risposta'),
+  'cf-turnstile-response': z.string().max(2048).optional().describe('Token Cloudflare Turnstile'),
+});
+export const HumanCheckHeaders = z.object({
+  'cf-turnstile-response': z.string().max(2048).optional().describe('Token Cloudflare Turnstile'),
+});
+
+export const OtpRequest = z.object({ email: Email, locale: Locale.default('it') }).meta({ id: 'OtpRequest' });
+export const OtpAccepted = z
+  .object({ status: z.literal('accepted'), expiresInSec: z.number().int() })
+  .describe('Risposta sempre uguale, anche se il codice non è stato inviato (anti-enumerazione)')
+  .meta({ id: 'OtpAccepted' });
+
+export const OtpVerifyRequest = z
+  .object({ email: Email, code: z.string().regex(/^\d{6}$/, '6 cifre') })
+  .meta({ id: 'OtpVerifyRequest' });
+export const OtpVerified = z
+  .object({
+    verificationToken: z.string().describe('Monouso: si passa alla conferma della prenotazione'),
+    expiresAt: IsoDateTime,
+  })
+  .meta({ id: 'OtpVerified' });
+
+export const ConfirmRequest = z
+  .object({
+    verificationToken: z.string().min(32).max(128),
+    customer: z.object({ firstName: PersonName, lastName: PersonName, email: Email, locale: Locale }),
+    acceptPrivacy: z.literal(true).describe('Presa visione dell’informativa privacy'),
+    marketingConsent: z.boolean().default(false).describe('Facoltativo, mai preselezionato'),
+    note: z.string().trim().max(500).optional(),
+  })
+  .meta({ id: 'ConfirmRequest' });
+
+export const Confirmation = z
+  .object({
+    booking: BookingSummary,
+    manageToken: z
+      .string()
+      .describe('Per il link di gestione /v1/manage/{token}: si mostra una volta, poi arriva via email'),
+  })
+  .meta({ id: 'Confirmation' });

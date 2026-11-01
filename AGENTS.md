@@ -35,7 +35,9 @@ DATABASE_URL=… pnpm --filter @arthur/db db:seed:mock # dati di prova di docs/2
 ```
 
 ```bash
-DATABASE_URL=… ORGANIZATION_SLUG=arthur-style pnpm --filter @arthur/api start   # API su :3200 (config: apps/api/src/config.ts)
+DATABASE_URL=… ORGANIZATION_SLUG=arthur-style HOLD_COOKIE_SECRET=… OTP_SECRET=… \
+  TURNSTILE_SECRET=1x0000000000000000000000000000000AA MAIL_TRANSPORT=dev-file \
+  pnpm --filter @arthur/api start   # API su :3200 (config: apps/api/src/config.ts; email di sviluppo in .dev-mail/)
 pnpm --filter @arthur/api openapi   # rigenera packages/contracts/openapi.json (un test fallisce se non è aggiornato)
 ```
 

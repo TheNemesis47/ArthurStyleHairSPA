@@ -88,6 +88,7 @@ export function holdInput(
     currency: 'EUR',
     source: 'web',
     items: [{ serviceId: SVC, priceCents: 2500, snapshot: { name: 'Taglio', price: 2500 } }],
+    now: NOW,
     expiresAt: opts.expiresAt ?? new Date(NOW.getTime() + 10 * 60_000),
     sessionHash: opts.session ?? null,
     idempotencyKey: opts.key ?? null,

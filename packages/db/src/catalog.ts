@@ -21,6 +21,13 @@ import { withOrgTx } from './tx.ts';
 
 const PUBLIC_STATUSES = ['active', 'closing'];
 const DEFAULT_POLICY: BookingPolicy = { slotGranularityMin: 15, minNoticeMin: 180, maxAdvanceDays: 35 };
+/** Default di booking_policies (migrazione 0001): valgono se la sede non ha ancora una riga di policy. */
+const DEFAULT_RULES: BookingRules = {
+  holdTtlSec: 600,
+  cancelWindowMin: 5760,
+  rescheduleWindowMin: 5760,
+  maxFutureBookings: 3,
+};
 const DAY_MS = 86_400_000;
 
 export interface LocationSummary {
@@ -226,6 +233,12 @@ export interface AvailabilityRequest {
   readonly from: LocalDate;
   readonly to: LocalDate;
   readonly now: EpochMs;
+  /**
+   * Allocazioni da NON considerare occupate:
+   * - bookingId: la prenotazione che si sta spostando (può sovrapporsi a se stessa);
+   * - holdSessionHash: gli hold della sessione, che il nuovo hold sostituirà (docs/06 E10).
+   */
+  readonly ignore?: { readonly bookingId?: string; readonly holdSessionHash?: Buffer };
 }
 
 export interface BookableService {
@@ -233,6 +246,15 @@ export interface BookableService {
   readonly slug: string;
   readonly name: Readonly<Record<string, string>>;
   readonly priceCents: number;
+  readonly priceIsFrom: boolean;
+}
+
+/** Regole della sede che non servono al motore ma all'API (docs/05 booking_policies). */
+export interface BookingRules {
+  readonly holdTtlSec: number;
+  readonly cancelWindowMin: number;
+  readonly rescheduleWindowMin: number;
+  readonly maxFutureBookings: number;
 }
 
 export type AvailabilityLoad =
@@ -245,10 +267,40 @@ export type AvailabilityLoad =
         readonly currency: string;
       };
       readonly services: readonly BookableService[];
+      readonly rules: BookingRules;
       readonly input: AvailabilityInput;
     }
   | { readonly ok: false; readonly reason: 'location-not-found' }
   | { readonly ok: false; readonly reason: 'unknown-services'; readonly slugs: readonly string[] };
+
+/** Regole di prenotazione della sede (default della migrazione se manca la riga). */
+export async function getBookingRules(
+  pool: pg.Pool,
+  organizationId: string,
+  locationId: string,
+): Promise<BookingRules> {
+  return withOrgTx(pool, organizationId, async (c) => {
+    const r = await c.query<{
+      hold_ttl_sec: number;
+      cancel_window_min: number;
+      reschedule_window_min: number;
+      max_future_bookings: number;
+    }>(
+      `SELECT hold_ttl_sec, cancel_window_min, reschedule_window_min, max_future_bookings
+         FROM booking_policies WHERE location_id = $1`,
+      [locationId],
+    );
+    const p = r.rows[0];
+    return p === undefined
+      ? DEFAULT_RULES
+      : {
+          holdTtlSec: p.hold_ttl_sec,
+          cancelWindowMin: p.cancel_window_min,
+          rescheduleWindowMin: p.reschedule_window_min,
+          maxFutureBookings: p.max_future_bookings,
+        };
+  });
+}
 
 /**
  * Raccoglie dal database tutto ciò che serve a `computeAvailability`: policy, orari, servizi con fasi e requisiti,
@@ -273,10 +325,11 @@ export async function loadAvailabilityInput(
       slug: string;
       name: Record<string, string>;
       price_cents: number;
+      price_is_from: boolean;
       buffer_before_min: number;
       buffer_after_min: number;
     }>(
-      `SELECT id, slug, name, price_cents, buffer_before_min, buffer_after_min FROM services
+      `SELECT id, slug, name, price_cents, price_is_from, buffer_before_min, buffer_after_min FROM services
         WHERE location_id = $1 AND slug = ANY($2) AND archived_at IS NULL AND online_bookable`,
       [location.id, [...req.serviceSlugs]],
     );
@@ -318,8 +371,14 @@ export async function loadAvailabilityInput(
       slot_granularity_min: number;
       min_notice_min: number;
       max_advance_days: number;
+      hold_ttl_sec: number;
+      cancel_window_min: number;
+      reschedule_window_min: number;
+      max_future_bookings: number;
     }>(
-      'SELECT slot_granularity_min, min_notice_min, max_advance_days FROM booking_policies WHERE location_id = $1',
+      `SELECT slot_granularity_min, min_notice_min, max_advance_days, hold_ttl_sec, cancel_window_min,
+              reschedule_window_min, max_future_bookings
+         FROM booking_policies WHERE location_id = $1`,
       [location.id],
     );
     const p = policyRow.rows[0];
@@ -330,6 +389,15 @@ export async function loadAvailabilityInput(
             slotGranularityMin: p.slot_granularity_min,
             minNoticeMin: p.min_notice_min,
             maxAdvanceDays: p.max_advance_days,
+          };
+    const rules: BookingRules =
+      p === undefined
+        ? DEFAULT_RULES
+        : {
+            holdTtlSec: p.hold_ttl_sec,
+            cancelWindowMin: p.cancel_window_min,
+            rescheduleWindowMin: p.reschedule_window_min,
+            maxFutureBookings: p.max_future_bookings,
           };
 
     const windowRows = (sql: string, id: string) =>
@@ -409,16 +477,36 @@ export async function loadAvailabilityInput(
         WHERE location_id = $1 AND during && tstzrange($2, $3, '[)')`,
       [location.id, rangeStart, rangeEnd],
     );
+    // Gli hold scaduti ma non ancora ripuliti dal worker non occupano più l'agenda: createHold li fa scadere.
     const allocations = await c.query<{ resource_id: string; s: Date; e: Date }>(
-      `SELECT resource_id, lower(during) AS s, upper(during) AS e FROM allocations
-        WHERE location_id = $1 AND active AND during && tstzrange($2, $3, '[)')`,
-      [location.id, rangeStart, rangeEnd],
+      `SELECT a.resource_id, lower(a.during) AS s, upper(a.during) AS e FROM allocations a
+        WHERE a.location_id = $1 AND a.active AND a.during && tstzrange($2, $3, '[)')
+          AND NOT EXISTS (
+            SELECT 1 FROM bookings b
+             WHERE b.id = a.booking_id
+               AND (b.id = $5::uuid
+                    OR (b.status = 'held' AND (b.hold_expires_at <= $4 OR b.hold_session_hash = $6::bytea))))`,
+      [
+        location.id,
+        rangeStart,
+        rangeEnd,
+        new Date(req.now),
+        req.ignore?.bookingId ?? null,
+        req.ignore?.holdSessionHash ?? null,
+      ],
     );
 
     return {
       ok: true,
       location,
-      services: ordered.map((s) => ({ id: s.id, slug: s.slug, name: s.name, priceCents: s.price_cents })),
+      services: ordered.map((s) => ({
+        id: s.id,
+        slug: s.slug,
+        name: s.name,
+        priceCents: s.price_cents,
+        priceIsFrom: s.price_is_from,
+      })),
+      rules,
       input: {
         timezone: location.timezone,
         policy,

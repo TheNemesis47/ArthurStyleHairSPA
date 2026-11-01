@@ -68,4 +68,5 @@ Stato: `aggiornato 31/10/2026` (prima tornata di risposte) · Strumenti: `to-que
 | Q46 | P1 | Confermi **35 giorni** come orizzonte di prenotazione? | Q15 era ambigua |
 | Q47 | P1 | Quale assistente userà Arturo (Claude, ChatGPT…)? Con il piano consumer i connettori MCP remoti potrebbero non essere disponibili o essere limitati ⚠️ da verificare | Fattibilità di F6 |
 | Q48 | P2 | Avete **foto prima/dopo** della stessa cliente, scattate con la stessa luce e inquadratura, e con **liberatoria** firmata? | Slider prima/dopo della pagina Lavori (F3.5, docs/08 §3) |
+| Q50 | P1 | Da quale indirizzo partono le email (es. `prenotazioni@<dominio>`) e chi gestisce il **DNS** del dominio? Servono i record SPF, DKIM e DMARC per il provider email | Senza, codici OTP e conferme finiscono nello spam (backend passo 3) |
 | Q49 | P2 | Per la sezione **"20 anni"**: anni e tappe principali della carriera di Arturo, ed eventuali foto storiche utilizzabili? | Timeline animata (F3.5); senza dati veri la sezione non si fa |

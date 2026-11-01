@@ -1,5 +1,21 @@
 export { advisoryLockKeys } from './lock-keys.ts';
-export { createHold, type CreateHoldInput, type CreateHoldResult, type HoldItem } from './holds.ts';
+export {
+  createHold,
+  findByIdempotencyKey,
+  getHold,
+  releaseHold,
+  type CreateHoldInput,
+  type CreateHoldResult,
+  type HoldItem,
+  type HoldView,
+  type ReleaseResult,
+} from './holds.ts';
+export {
+  issueContactVerification,
+  verifyContactCode,
+  type IssueVerificationInput,
+  type VerifyCodeInput,
+} from './verifications.ts';
 export { migrate } from './migrate.ts';
 export { PG, pgCode, pgConstraint } from './errors.ts';
 export {
@@ -16,6 +32,7 @@ export {
 export { withOrgTx } from './tx.ts';
 export {
   findOrganizationId,
+  getBookingRules,
   getLocation,
   listLocations,
   listServices,
@@ -23,6 +40,7 @@ export {
   type AvailabilityLoad,
   type AvailabilityRequest,
   type BookableService,
+  type BookingRules,
   type CatalogCategory,
   type CatalogService,
   type LocationDetail,

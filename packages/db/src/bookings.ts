@@ -4,6 +4,7 @@ import type { Slot } from '@arthur/core';
 import { advisoryLockKeys } from './lock-keys.ts';
 import { PG, pgCode, pgConstraint } from './errors.ts';
 import { lockKeys, withOrgTx } from './tx.ts';
+import { consumeVerificationToken } from './verifications.ts';
 
 const MINUTE = 60_000;
 
@@ -25,6 +26,7 @@ export class BookingRejected extends Error {
 export type BookingRejection =
   | 'not-found'
   | 'not-held'
+  | 'contact-not-verified'
   | 'hold-expired'
   | 'hold-not-owned'
   | 'customer-blocked'
@@ -63,13 +65,22 @@ export interface ConfirmHoldInput {
   readonly bookingId: string;
   /** Hash della sessione che ha creato l'hold (cookie/dispositivo). */
   readonly sessionHash: Buffer | null;
-  /** Il contatto è già stato verificato con OTP (BOOK-07): qui arriva solo un'email verificata. */
   readonly customer: {
     readonly firstName: string;
     readonly lastName: string;
     readonly email: string;
     readonly locale: string;
   };
+  /**
+   * Come è stato verificato il contatto (BOOK-07, Q17):
+   * - otp-token: token monouso di /v1/otp/verify, consumato in questa transazione (sito pubblico);
+   * - authenticated-user: utente già autenticato da Better Auth (app, pannello), verificato a monte.
+   */
+  readonly verification:
+    { readonly kind: 'otp-token'; readonly tokenHash: Buffer } | { readonly kind: 'authenticated-user' };
+  /** Consenso marketing esplicito (casella non preselezionata, docs/14). false non revoca un consenso esistente. */
+  readonly marketingConsent?: boolean;
+  readonly customerNote?: string | null;
   readonly now: Date;
   readonly maxFutureBookings: number;
 }
@@ -91,6 +102,16 @@ export async function confirmHold(
       if (b.hold_expires_at === null || b.hold_expires_at.getTime() <= input.now.getTime())
         throw new BookingRejected('hold-expired');
 
+      if (
+        input.verification.kind === 'otp-token' &&
+        !(await consumeVerificationToken(c, {
+          tokenHash: input.verification.tokenHash,
+          destination: input.customer.email,
+          now: input.now,
+        }))
+      )
+        throw new BookingRejected('contact-not-verified');
+
       // un solo profilo per email verificata nell'organizzazione (Q39, indice customers_verified_email_uq)
       const found = await c.query<{ id: string; blocked_at: Date | null }>(
         `SELECT id, blocked_at FROM customers
@@ -101,8 +122,9 @@ export async function confirmHold(
       if (found.rows[0]?.blocked_at != null) throw new BookingRejected('customer-blocked');
       if (customerId === undefined) {
         const ins = await c.query<{ id: string }>(
-          `INSERT INTO customers (organization_id, first_name, last_name, email, email_verified_at, preferred_locale)
-           VALUES ($1, $2, $3, $4, $5, $6) RETURNING id`,
+          `INSERT INTO customers (organization_id, first_name, last_name, email, email_verified_at, preferred_locale,
+                                  marketing_consent_at, marketing_consent_src)
+           VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING id`,
           [
             input.organizationId,
             input.customer.firstName,
@@ -110,10 +132,18 @@ export async function confirmHold(
             input.customer.email,
             input.now,
             input.customer.locale,
+            input.marketingConsent === true ? input.now : null,
+            input.marketingConsent === true ? 'booking' : null,
           ],
         );
         customerId = ins.rows[0]?.id;
         if (customerId === undefined) throw new Error('INSERT customers senza id');
+      } else if (input.marketingConsent === true) {
+        await c.query(
+          `UPDATE customers SET marketing_consent_at = $2, marketing_consent_src = 'booking'
+            WHERE id = $1 AND marketing_consent_at IS NULL`,
+          [customerId, input.now],
+        );
       }
 
       const future = await c.query<{ n: number }>(
@@ -127,9 +157,9 @@ export async function confirmHold(
       const manageToken = randomBytes(32).toString('base64url'); // 256 bit
       await c.query(
         `UPDATE bookings SET status = 'confirmed', customer_id = $2, hold_expires_at = NULL, hold_session_hash = NULL,
-                manage_token_hash = $3, version = version + 1, updated_at = now()
+                manage_token_hash = $3, customer_note = $4, version = version + 1, updated_at = now()
           WHERE id = $1`,
-        [input.bookingId, customerId, sha256(manageToken)],
+        [input.bookingId, customerId, sha256(manageToken), input.customerNote ?? null],
       );
       return { manageToken, customerId };
     });

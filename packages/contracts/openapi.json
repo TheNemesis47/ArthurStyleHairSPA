@@ -38,6 +38,27 @@
                 "type": "string"
               }
             }
+          },
+          "alternatives": {
+            "description": "Con slot-taken: gli orari liberi più vicini a quello richiesto",
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "start": {
+                  "type": "string",
+                  "description": "ISO 8601 con offset della sede, es. 2026-11-03T10:30:00+01:00"
+                },
+                "end": {
+                  "type": "string",
+                  "description": "ISO 8601 con offset della sede, es. 2026-11-03T10:30:00+01:00"
+                }
+              },
+              "required": [
+                "start",
+                "end"
+              ]
+            }
           }
         },
         "required": [
@@ -420,6 +441,437 @@
           "slots"
         ]
       },
+      "BookingSummaryInput": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "held",
+              "confirmed",
+              "completed",
+              "cancelled",
+              "no_show",
+              "expired"
+            ]
+          },
+          "location": {
+            "type": "string",
+            "pattern": "^[a-z0-9-]{2,60}$"
+          },
+          "timezone": {
+            "type": "string"
+          },
+          "start": {
+            "type": "string",
+            "description": "ISO 8601 con offset della sede, es. 2026-11-03T10:30:00+01:00"
+          },
+          "end": {
+            "type": "string",
+            "description": "ISO 8601 con offset della sede, es. 2026-11-03T10:30:00+01:00"
+          },
+          "services": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "slug": {
+                  "type": "string",
+                  "pattern": "^[a-z0-9-]{2,60}$"
+                },
+                "name": {
+                  "type": "object",
+                  "propertyNames": {
+                    "type": "string"
+                  },
+                  "additionalProperties": {
+                    "type": "string"
+                  },
+                  "description": "Testo per lingua: { \"it\": \"…\", \"en\": \"…\" }"
+                },
+                "price": {
+                  "type": "object",
+                  "properties": {
+                    "amountCents": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 9007199254740991,
+                      "description": "Centesimi, IVA inclusa"
+                    },
+                    "currency": {
+                      "type": "string",
+                      "minLength": 3,
+                      "maxLength": 3
+                    },
+                    "isFrom": {
+                      "type": "boolean",
+                      "description": "\"A partire da\": il prezzo finale dipende dai capelli"
+                    }
+                  },
+                  "required": [
+                    "amountCents",
+                    "currency",
+                    "isFrom"
+                  ]
+                }
+              },
+              "required": [
+                "slug",
+                "name",
+                "price"
+              ]
+            }
+          },
+          "total": {
+            "type": "object",
+            "properties": {
+              "amountCents": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 9007199254740991,
+                "description": "Centesimi, IVA inclusa"
+              },
+              "currency": {
+                "type": "string",
+                "minLength": 3,
+                "maxLength": 3
+              },
+              "isFrom": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "amountCents",
+              "currency",
+              "isFrom"
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "status",
+          "location",
+          "timezone",
+          "start",
+          "end",
+          "services",
+          "total"
+        ]
+      },
+      "HoldRequestInput": {
+        "type": "object",
+        "properties": {
+          "location": {
+            "type": "string",
+            "pattern": "^[a-z0-9-]{2,60}$"
+          },
+          "services": {
+            "minItems": 1,
+            "maxItems": 5,
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^[a-z0-9-]{2,60}$"
+            },
+            "description": "Slug dei servizi, nell’ordine di esecuzione (max 5)"
+          },
+          "start": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+            "description": "Uno degli orari restituiti da /v1/availability"
+          }
+        },
+        "required": [
+          "location",
+          "services",
+          "start"
+        ]
+      },
+      "HoldInput": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "held",
+              "confirmed",
+              "completed",
+              "cancelled",
+              "no_show",
+              "expired"
+            ]
+          },
+          "location": {
+            "type": "string",
+            "pattern": "^[a-z0-9-]{2,60}$"
+          },
+          "timezone": {
+            "type": "string"
+          },
+          "start": {
+            "type": "string",
+            "description": "ISO 8601 con offset della sede, es. 2026-11-03T10:30:00+01:00"
+          },
+          "end": {
+            "type": "string",
+            "description": "ISO 8601 con offset della sede, es. 2026-11-03T10:30:00+01:00"
+          },
+          "services": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "slug": {
+                  "type": "string",
+                  "pattern": "^[a-z0-9-]{2,60}$"
+                },
+                "name": {
+                  "type": "object",
+                  "propertyNames": {
+                    "type": "string"
+                  },
+                  "additionalProperties": {
+                    "type": "string"
+                  },
+                  "description": "Testo per lingua: { \"it\": \"…\", \"en\": \"…\" }"
+                },
+                "price": {
+                  "type": "object",
+                  "properties": {
+                    "amountCents": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 9007199254740991,
+                      "description": "Centesimi, IVA inclusa"
+                    },
+                    "currency": {
+                      "type": "string",
+                      "minLength": 3,
+                      "maxLength": 3
+                    },
+                    "isFrom": {
+                      "type": "boolean",
+                      "description": "\"A partire da\": il prezzo finale dipende dai capelli"
+                    }
+                  },
+                  "required": [
+                    "amountCents",
+                    "currency",
+                    "isFrom"
+                  ]
+                }
+              },
+              "required": [
+                "slug",
+                "name",
+                "price"
+              ]
+            }
+          },
+          "total": {
+            "type": "object",
+            "properties": {
+              "amountCents": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 9007199254740991,
+                "description": "Centesimi, IVA inclusa"
+              },
+              "currency": {
+                "type": "string",
+                "minLength": 3,
+                "maxLength": 3
+              },
+              "isFrom": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "amountCents",
+              "currency",
+              "isFrom"
+            ]
+          },
+          "expiresAt": {
+            "type": "string",
+            "description": "Oltre questo istante la conferma risponde 410"
+          }
+        },
+        "required": [
+          "id",
+          "status",
+          "location",
+          "timezone",
+          "start",
+          "end",
+          "services",
+          "total",
+          "expiresAt"
+        ]
+      },
+      "OtpRequestInput": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "maxLength": 254
+          },
+          "locale": {
+            "default": "it",
+            "type": "string",
+            "enum": [
+              "it",
+              "en"
+            ]
+          }
+        },
+        "required": [
+          "email"
+        ]
+      },
+      "OtpAcceptedInput": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "const": "accepted"
+          },
+          "expiresInSec": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          }
+        },
+        "required": [
+          "status",
+          "expiresInSec"
+        ],
+        "description": "Risposta sempre uguale, anche se il codice non è stato inviato (anti-enumerazione)"
+      },
+      "OtpVerifyRequestInput": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "maxLength": 254
+          },
+          "code": {
+            "type": "string",
+            "pattern": "^\\d{6}$"
+          }
+        },
+        "required": [
+          "email",
+          "code"
+        ]
+      },
+      "OtpVerifiedInput": {
+        "type": "object",
+        "properties": {
+          "verificationToken": {
+            "type": "string",
+            "description": "Monouso: si passa alla conferma della prenotazione"
+          },
+          "expiresAt": {
+            "type": "string",
+            "description": "ISO 8601 con offset della sede, es. 2026-11-03T10:30:00+01:00"
+          }
+        },
+        "required": [
+          "verificationToken",
+          "expiresAt"
+        ]
+      },
+      "ConfirmRequestInput": {
+        "type": "object",
+        "properties": {
+          "verificationToken": {
+            "type": "string",
+            "minLength": 32,
+            "maxLength": 128
+          },
+          "customer": {
+            "type": "object",
+            "properties": {
+              "firstName": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 80,
+                "pattern": "^[^\\p{Cc}\\p{Cf}]+$"
+              },
+              "lastName": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 80,
+                "pattern": "^[^\\p{Cc}\\p{Cf}]+$"
+              },
+              "email": {
+                "type": "string",
+                "maxLength": 254
+              },
+              "locale": {
+                "type": "string",
+                "enum": [
+                  "it",
+                  "en"
+                ]
+              }
+            },
+            "required": [
+              "firstName",
+              "lastName",
+              "email",
+              "locale"
+            ]
+          },
+          "acceptPrivacy": {
+            "type": "boolean",
+            "const": true,
+            "description": "Presa visione dell’informativa privacy"
+          },
+          "marketingConsent": {
+            "default": false,
+            "description": "Facoltativo, mai preselezionato",
+            "type": "boolean"
+          },
+          "note": {
+            "type": "string",
+            "maxLength": 500
+          }
+        },
+        "required": [
+          "verificationToken",
+          "customer",
+          "acceptPrivacy"
+        ]
+      },
+      "ConfirmationInput": {
+        "type": "object",
+        "properties": {
+          "booking": {
+            "$ref": "#/components/schemas/BookingSummaryInput"
+          },
+          "manageToken": {
+            "type": "string",
+            "description": "Per il link di gestione /v1/manage/{token}: si mostra una volta, poi arriva via email"
+          }
+        },
+        "required": [
+          "booking",
+          "manageToken"
+        ]
+      },
       "Problem": {
         "type": "object",
         "properties": {
@@ -450,6 +902,28 @@
               "items": {
                 "type": "string"
               }
+            }
+          },
+          "alternatives": {
+            "description": "Con slot-taken: gli orari liberi più vicini a quello richiesto",
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "start": {
+                  "type": "string",
+                  "description": "ISO 8601 con offset della sede, es. 2026-11-03T10:30:00+01:00"
+                },
+                "end": {
+                  "type": "string",
+                  "description": "ISO 8601 con offset della sede, es. 2026-11-03T10:30:00+01:00"
+                }
+              },
+              "required": [
+                "start",
+                "end"
+              ],
+              "additionalProperties": false
             }
           }
         },
@@ -842,6 +1316,458 @@
           "slots"
         ],
         "additionalProperties": false
+      },
+      "BookingSummary": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "held",
+              "confirmed",
+              "completed",
+              "cancelled",
+              "no_show",
+              "expired"
+            ]
+          },
+          "location": {
+            "type": "string",
+            "pattern": "^[a-z0-9-]{2,60}$"
+          },
+          "timezone": {
+            "type": "string"
+          },
+          "start": {
+            "type": "string",
+            "description": "ISO 8601 con offset della sede, es. 2026-11-03T10:30:00+01:00"
+          },
+          "end": {
+            "type": "string",
+            "description": "ISO 8601 con offset della sede, es. 2026-11-03T10:30:00+01:00"
+          },
+          "services": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "slug": {
+                  "type": "string",
+                  "pattern": "^[a-z0-9-]{2,60}$"
+                },
+                "name": {
+                  "type": "object",
+                  "propertyNames": {
+                    "type": "string"
+                  },
+                  "additionalProperties": {
+                    "type": "string"
+                  },
+                  "description": "Testo per lingua: { \"it\": \"…\", \"en\": \"…\" }"
+                },
+                "price": {
+                  "type": "object",
+                  "properties": {
+                    "amountCents": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 9007199254740991,
+                      "description": "Centesimi, IVA inclusa"
+                    },
+                    "currency": {
+                      "type": "string",
+                      "minLength": 3,
+                      "maxLength": 3
+                    },
+                    "isFrom": {
+                      "type": "boolean",
+                      "description": "\"A partire da\": il prezzo finale dipende dai capelli"
+                    }
+                  },
+                  "required": [
+                    "amountCents",
+                    "currency",
+                    "isFrom"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "required": [
+                "slug",
+                "name",
+                "price"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "total": {
+            "type": "object",
+            "properties": {
+              "amountCents": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 9007199254740991,
+                "description": "Centesimi, IVA inclusa"
+              },
+              "currency": {
+                "type": "string",
+                "minLength": 3,
+                "maxLength": 3
+              },
+              "isFrom": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "amountCents",
+              "currency",
+              "isFrom"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "id",
+          "status",
+          "location",
+          "timezone",
+          "start",
+          "end",
+          "services",
+          "total"
+        ],
+        "additionalProperties": false
+      },
+      "HoldRequest": {
+        "type": "object",
+        "properties": {
+          "location": {
+            "type": "string",
+            "pattern": "^[a-z0-9-]{2,60}$"
+          },
+          "services": {
+            "minItems": 1,
+            "maxItems": 5,
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^[a-z0-9-]{2,60}$"
+            },
+            "description": "Slug dei servizi, nell’ordine di esecuzione (max 5)"
+          },
+          "start": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+            "description": "Uno degli orari restituiti da /v1/availability"
+          }
+        },
+        "required": [
+          "location",
+          "services",
+          "start"
+        ],
+        "additionalProperties": false
+      },
+      "Hold": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "held",
+              "confirmed",
+              "completed",
+              "cancelled",
+              "no_show",
+              "expired"
+            ]
+          },
+          "location": {
+            "type": "string",
+            "pattern": "^[a-z0-9-]{2,60}$"
+          },
+          "timezone": {
+            "type": "string"
+          },
+          "start": {
+            "type": "string",
+            "description": "ISO 8601 con offset della sede, es. 2026-11-03T10:30:00+01:00"
+          },
+          "end": {
+            "type": "string",
+            "description": "ISO 8601 con offset della sede, es. 2026-11-03T10:30:00+01:00"
+          },
+          "services": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "slug": {
+                  "type": "string",
+                  "pattern": "^[a-z0-9-]{2,60}$"
+                },
+                "name": {
+                  "type": "object",
+                  "propertyNames": {
+                    "type": "string"
+                  },
+                  "additionalProperties": {
+                    "type": "string"
+                  },
+                  "description": "Testo per lingua: { \"it\": \"…\", \"en\": \"…\" }"
+                },
+                "price": {
+                  "type": "object",
+                  "properties": {
+                    "amountCents": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 9007199254740991,
+                      "description": "Centesimi, IVA inclusa"
+                    },
+                    "currency": {
+                      "type": "string",
+                      "minLength": 3,
+                      "maxLength": 3
+                    },
+                    "isFrom": {
+                      "type": "boolean",
+                      "description": "\"A partire da\": il prezzo finale dipende dai capelli"
+                    }
+                  },
+                  "required": [
+                    "amountCents",
+                    "currency",
+                    "isFrom"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "required": [
+                "slug",
+                "name",
+                "price"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "total": {
+            "type": "object",
+            "properties": {
+              "amountCents": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 9007199254740991,
+                "description": "Centesimi, IVA inclusa"
+              },
+              "currency": {
+                "type": "string",
+                "minLength": 3,
+                "maxLength": 3
+              },
+              "isFrom": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "amountCents",
+              "currency",
+              "isFrom"
+            ],
+            "additionalProperties": false
+          },
+          "expiresAt": {
+            "type": "string",
+            "description": "Oltre questo istante la conferma risponde 410"
+          }
+        },
+        "required": [
+          "id",
+          "status",
+          "location",
+          "timezone",
+          "start",
+          "end",
+          "services",
+          "total",
+          "expiresAt"
+        ],
+        "additionalProperties": false
+      },
+      "OtpRequest": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "format": "email",
+            "pattern": "^(?:[A-Za-z0-9_'+\\-]+\\.)*[A-Za-z0-9_'+\\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
+          },
+          "locale": {
+            "default": "it",
+            "type": "string",
+            "enum": [
+              "it",
+              "en"
+            ]
+          }
+        },
+        "required": [
+          "email",
+          "locale"
+        ],
+        "additionalProperties": false
+      },
+      "OtpAccepted": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "const": "accepted"
+          },
+          "expiresInSec": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          }
+        },
+        "required": [
+          "status",
+          "expiresInSec"
+        ],
+        "additionalProperties": false,
+        "description": "Risposta sempre uguale, anche se il codice non è stato inviato (anti-enumerazione)"
+      },
+      "OtpVerifyRequest": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "format": "email",
+            "pattern": "^(?:[A-Za-z0-9_'+\\-]+\\.)*[A-Za-z0-9_'+\\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
+          },
+          "code": {
+            "type": "string",
+            "pattern": "^\\d{6}$"
+          }
+        },
+        "required": [
+          "email",
+          "code"
+        ],
+        "additionalProperties": false
+      },
+      "OtpVerified": {
+        "type": "object",
+        "properties": {
+          "verificationToken": {
+            "type": "string",
+            "description": "Monouso: si passa alla conferma della prenotazione"
+          },
+          "expiresAt": {
+            "type": "string",
+            "description": "ISO 8601 con offset della sede, es. 2026-11-03T10:30:00+01:00"
+          }
+        },
+        "required": [
+          "verificationToken",
+          "expiresAt"
+        ],
+        "additionalProperties": false
+      },
+      "ConfirmRequest": {
+        "type": "object",
+        "properties": {
+          "verificationToken": {
+            "type": "string",
+            "minLength": 32,
+            "maxLength": 128
+          },
+          "customer": {
+            "type": "object",
+            "properties": {
+              "firstName": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 80,
+                "pattern": "^[^\\p{Cc}\\p{Cf}]+$"
+              },
+              "lastName": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 80,
+                "pattern": "^[^\\p{Cc}\\p{Cf}]+$"
+              },
+              "email": {
+                "type": "string",
+                "format": "email",
+                "pattern": "^(?:[A-Za-z0-9_'+\\-]+\\.)*[A-Za-z0-9_'+\\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
+              },
+              "locale": {
+                "type": "string",
+                "enum": [
+                  "it",
+                  "en"
+                ]
+              }
+            },
+            "required": [
+              "firstName",
+              "lastName",
+              "email",
+              "locale"
+            ],
+            "additionalProperties": false
+          },
+          "acceptPrivacy": {
+            "type": "boolean",
+            "const": true,
+            "description": "Presa visione dell’informativa privacy"
+          },
+          "marketingConsent": {
+            "default": false,
+            "description": "Facoltativo, mai preselezionato",
+            "type": "boolean"
+          },
+          "note": {
+            "type": "string",
+            "maxLength": 500
+          }
+        },
+        "required": [
+          "verificationToken",
+          "customer",
+          "acceptPrivacy",
+          "marketingConsent"
+        ],
+        "additionalProperties": false
+      },
+      "Confirmation": {
+        "type": "object",
+        "properties": {
+          "booking": {
+            "$ref": "#/components/schemas/BookingSummary"
+          },
+          "manageToken": {
+            "type": "string",
+            "description": "Per il link di gestione /v1/manage/{token}: si mostra una volta, poi arriva via email"
+          }
+        },
+        "required": [
+          "booking",
+          "manageToken"
+        ],
+        "additionalProperties": false
       }
     }
   },
@@ -1028,6 +1954,418 @@
             }
           },
           "404": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/booking-holds": {
+      "post": {
+        "summary": "Blocca l'orario per qualche minuto mentre il cliente conferma (l'operatore lo sceglie il server)",
+        "tags": [
+          "booking"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/HoldRequestInput"
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            },
+            "in": "header",
+            "name": "idempotency-key",
+            "required": true,
+            "description": "UUID generato dal client: una ripetizione restituisce la stessa risposta"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "maxLength": 2048
+            },
+            "in": "header",
+            "name": "cf-turnstile-response",
+            "required": false,
+            "description": "Token Cloudflare Turnstile"
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Hold"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/booking-holds/{id}": {
+      "delete": {
+        "summary": "Rilascia l'hold (l'utente torna indietro). Solo la sessione che l'ha creato",
+        "tags": [
+          "booking"
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            },
+            "in": "path",
+            "name": "id",
+            "required": true
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Default Response"
+          },
+          "403": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/otp": {
+      "post": {
+        "summary": "Invia un codice di verifica via email. Risposta sempre uguale (anti-enumerazione)",
+        "tags": [
+          "booking"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OtpRequestInput"
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "maxLength": 2048
+            },
+            "in": "header",
+            "name": "cf-turnstile-response",
+            "required": false,
+            "description": "Token Cloudflare Turnstile"
+          }
+        ],
+        "responses": {
+          "202": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OtpAccepted"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/otp/verify": {
+      "post": {
+        "summary": "Verifica il codice: max 5 tentativi per codice, poi serve un codice nuovo",
+        "tags": [
+          "booking"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OtpVerifyRequestInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OtpVerified"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/booking-holds/{id}/confirm": {
+      "post": {
+        "summary": "Conferma con i dati del cliente e il token di verifica dell’email",
+        "tags": [
+          "booking"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ConfirmRequestInput"
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            },
+            "in": "path",
+            "name": "id",
+            "required": true
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Confirmation"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "410": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "422": {
             "description": "Default Response",
             "content": {
               "application/json": {

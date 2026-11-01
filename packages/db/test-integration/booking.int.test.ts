@@ -69,6 +69,7 @@ function holdInput(slot: Slot, key: string | null = null): CreateHoldInput {
     currency: 'EUR',
     source: 'web',
     items: [{ serviceId: SVC, priceCents: 2500, snapshot: { name: 'Taglio', price: 2500 } }],
+    now: new Date(Date.parse('2026-11-02T08:00:00+01:00')),
     expiresAt: new Date(Date.parse('2026-11-02T08:10:00+01:00')),
     sessionHash: null,
     idempotencyKey: key,
@@ -157,8 +158,13 @@ describe('prenotazioni su PostgreSQL reale', () => {
     )!;
     const first = await createHold(db.app, holdInput(slot, 'idem-1'));
     expect(first.ok).toBe(true);
-    await expect(createHold(db.app, holdInput(slot, 'idem-1'))).rejects.toThrow(
-      /idempotency_key|duplicate key/,
+    expect(await createHold(db.app, holdInput(slot, 'idem-1'))).toEqual({
+      ok: false,
+      reason: 'duplicate-key',
+    });
+    const n = await db.admin.query(
+      "SELECT count(*)::int AS n FROM bookings WHERE idempotency_key = 'idem-1'",
     );
+    expect(n.rows[0]).toEqual({ n: 1 });
   });
 });

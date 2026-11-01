@@ -19,6 +19,7 @@ const confirmIn = (bookingId: string, over: Partial<Parameters<typeof confirmHol
   bookingId,
   sessionHash: null,
   customer,
+  verification: { kind: 'authenticated-user' } as const,
   now: new Date(NOW.getTime() + 5 * 60_000),
   maxFutureBookings: 3,
   ...over,

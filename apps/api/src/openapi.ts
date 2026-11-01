@@ -15,6 +15,10 @@ export async function generateOpenApi(): Promise<string> {
     organizationId: '00000000-0000-0000-0000-000000000000',
     clock: { now: () => 0 },
     publicOrigin: 'https://api.example.invalid',
+    // Solo per registrare le rotte: nessuna richiesta viene servita.
+    secrets: { holdCookie: 'x'.repeat(32), otp: 'y'.repeat(32) },
+    human: { verify: () => Promise.resolve(false) },
+    mailer: { send: () => Promise.reject(new Error('non usato')) },
   });
   await app.ready();
   const doc = app.swagger();

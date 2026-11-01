@@ -152,6 +152,7 @@ describe('disponibilità dai dati del database', () => {
         })),
         currency: 'EUR',
         source: 'web',
+        now: new Date(NOW),
         expiresAt: new Date(NOW + 600_000),
         sessionHash: null,
         idempotencyKey: null,

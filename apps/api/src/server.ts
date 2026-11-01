@@ -3,6 +3,8 @@ import pg from 'pg';
 import { findOrganizationId } from '@arthur/db';
 import { buildApp } from './app.ts';
 import { loadConfig } from './config.ts';
+import { devFileMailer } from './mail.ts';
+import { turnstileVerifier } from './security.ts';
 
 const config = loadConfig();
 const pool = new pg.Pool({ connectionString: config.DATABASE_URL, max: 20 });
@@ -22,6 +24,10 @@ const app = await buildApp({
   corsOrigins: config.CORS_ORIGINS,
   trustProxy: config.TRUST_PROXY,
   logLevel: config.LOG_LEVEL,
+  secrets: { holdCookie: config.HOLD_COOKIE_SECRET, otp: config.OTP_SECRET },
+  human: turnstileVerifier(config.TURNSTILE_SECRET, { hostnames: config.TURNSTILE_HOSTNAMES }),
+  // config.ts rifiuta 'dev-file' in produzione; il provider vero arriva con il worker (backend passo 3)
+  mailer: devFileMailer(config.MAIL_DEV_DIR),
 });
 
 const shutdown = async () => {

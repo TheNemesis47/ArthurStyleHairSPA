@@ -53,6 +53,23 @@ Stato: `bozza` · Implementazione: `apps/api` · Contratto: OpenAPI 3.1 generata
 | GET | `/v1/meta/app-config` | Versione minima dell'app, feature flag pubbliche | |
 | GET | `/health/live`, `/health/ready` | Healthcheck | `ready` controlla il DB. Non esposti pubblicamente |
 
+### 3-bis. Prenotazione dal sito: regole implementate
+
+- **Sessione dell'hold:** cookie `__Host-hold` (`HttpOnly`, `Secure`, `SameSite=Lax`, `Path=/`, firmato HMAC-SHA-256, 24 h).
+  In DB solo lo SHA-256 dell'identificativo. Il sito chiama l'API con `credentials: 'include'`; CORS ammette solo `CORS_ORIGINS`
+  e una scrittura con un header `Origin` non ammesso riceve `403 forbidden-origin`.
+- **Hold:** il client manda solo sede, servizi e orario; il server ricalcola lo slot e sceglie operatore e postazioni.
+  Un nuovo hold della stessa sessione sostituisce il precedente (E10). Un hold scaduto non ancora ripulito non blocca l'orario.
+- **Idempotenza:** la stessa `Idempotency-Key` dalla stessa sessione restituisce lo stesso hold **senza** un nuovo token
+  Turnstile (i token sono monouso); da un'altra sessione → `422 idempotency-key-reused`.
+- **OTP:** `POST /v1/otp` risponde sempre `202` con lo stesso corpo, anche oltre il limite di 3 codici in 15' (10 al giorno)
+  per indirizzo. In DB l'HMAC del codice (chiave `OTP_SECRET`) e l'HMAC dell'IP. `POST /v1/otp/verify` restituisce un
+  `verificationToken` monouso valido 15'; dopo 5 errori il codice è bloccato (`429 otp-locked`).
+- **Conferma:** il token si consuma nella **stessa transazione** della conferma: se la conferma fallisce (slot, limiti) il
+  token resta valido. La policy `require_contact_otp = 'new_customers'` dal sito vale come `always`: dire "per te non serve"
+  rivelerebbe chi è già cliente. Una seconda conferma dello stesso hold → `409 not-held` (il token di gestione non si può
+  restituire due volte: in DB c'è solo l'hash).
+
 ## 4. Endpoint cliente autenticato
 
 | Metodo | Path | Descrizione |
